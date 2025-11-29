@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -34,13 +35,11 @@ export default function LoginPage() {
         return;
       }
 
-      // token + user
       localStorage.setItem("doj_token", data.token);
       if (data.user) {
         localStorage.setItem("doj_user", JSON.stringify(data.user));
       }
 
-      // cookie pour le middleware
       if (typeof document !== "undefined") {
         document.cookie = `doj_token=${data.token}; Path=/; Max-Age=${
           7 * 24 * 60 * 60
@@ -65,16 +64,21 @@ export default function LoginPage() {
       <div className="relative z-10 w-full max-w-5xl px-4 py-10 md:py-14 flex flex-col md:flex-row gap-8 items-center md:items-stretch">
         {/* Panneau gauche : identité DOJ */}
         <section className="glass-card w-full md:w-1/2 p-6 md:p-8 flex flex-col justify-between">
-          <div className="relative">
-  <img
-    src="/logo-doj.png" // ← place ton logo dans /public/logo-doj.png
-    alt="Logo DOJ"
-    className="w-16 h-16 object-contain drop-shadow-[0_0_15px_rgba(0,120,255,0.6)]"
-  />
+          <div className="flex items-center gap-4 mb-8">
+            {/* Logo DOJ avec halo */}
+            <div className="relative h-16 w-16">
+              <div className="absolute inset-0 rounded-full bg-sky-500/35 blur-2xl opacity-70" />
+              <div className="relative h-full w-full rounded-full border border-sky-300/60 bg-slate-950/90 overflow-hidden flex items-center justify-center">
+                <Image
+                  src="/logo-doj.png" // mets ton logo dans /public/logo-doj.png
+                  alt="Logo DOJ"
+                  fill
+                  sizes="64px"
+                  className="object-contain"
+                />
+              </div>
+            </div>
 
-  {/* effet halo */}
-  <div className="absolute inset-0 rounded-full blur-2xl opacity-50 bg-blue-500/30"></div>
-</div>
             <div>
               <p className="text-[11px] uppercase tracking-[0.3em] text-sky-300/80">
                 San Andreas
@@ -112,65 +116,59 @@ export default function LoginPage() {
 
         {/* Panneau droit : formulaire de connexion */}
         <section className="glass-card w-full md:w-1/2 p-6 md:p-8 flex flex-col">
-  {/* CTA d'abord */}
-  <button
-    type="button"
-    onClick={() => router.push("/register")}
-    className="mb-5 w-full text-xs font-medium text-sky-100 bg-sky-600/80 hover:bg-sky-500 transition-all duration-300 py-2.5 rounded-xl shadow-[0_10px_30px_rgba(56,189,248,0.35)]"
-  >
-    Créer un compte DOJ
-  </button>
+          {/* CTA d'abord */}
+          <button
+            type="button"
+            onClick={() => router.push("/register")}
+            className="mb-5 w-full text-xs font-medium text-sky-100 bg-sky-600/80 hover:bg-sky-500 transition-all duration-300 py-2.5 rounded-xl shadow-[0_10px_30px_rgba(56,189,248,0.35)]"
+          >
+            Créer un compte DOJ
+          </button>
 
-  <div className="flex items-center gap-3 mb-5 text-[11px] text-slate-500">
-    <span className="h-px flex-1 bg-slate-600" />
-    <span>ou se connecter</span>
-    <span className="h-px flex-1 bg-slate-600" />
-  </div>
+          <div className="flex items-center gap-3 mb-5 text-[11px] text-slate-500">
+            <span className="h-px flex-1 bg-slate-600" />
+            <span>ou se connecter</span>
+            <span className="h-px flex-1 bg-slate-600" />
+          </div>
 
-  {/* Titre lié au formulaire, juste au-dessus du form */}
-  <header className="mb-4">
-    <p className="text-xs uppercase tracking-[0.22em] text-slate-400/80 mb-1">
-      Connexion
-    </p>
-    <h2 className="text-lg md:text-xl font-semibold text-slate-50">
-      Se connecter à son espace
-    </h2>
-    <p className="text-xs text-slate-400 mt-1">
-      Entrez vos identifiants personnels pour accéder au portail.
-    </p>
-  </header>
+          {/* Titre lié au formulaire */}
+          <header className="mb-4">
+            <p className="text-xs uppercase tracking-[0.22em] text-slate-400/80 mb-1">
+              Connexion
+            </p>
+            <h2 className="text-lg md:text-xl font-semibold text-slate-50">
+              Se connecter à son espace
+            </h2>
+            <p className="text-xs text-slate-400 mt-1">
+              Entrez vos identifiants personnels pour accéder au portail.
+            </p>
+          </header>
 
           <form onSubmit={handleSubmit} className="space-y-4 flex-1 flex flex-col">
             <div className="space-y-1 text-xs">
               <label className="font-medium text-slate-200">
                 Nom d&apos;utilisateur ou email
               </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={identifier}
-                  onChange={(e) => setIdentifier(e.target.value)}
-                  required
-                  placeholder="ex. a.targaryen"
-                  className="w-full rounded-xl bg-slate-900/60 border border-slate-700/80 focus:border-sky-400 focus:ring-2 focus:ring-sky-500/40 px-3.5 py-2.5 text-[13px] text-slate-50 outline-none transition-all duration-200"
-                />
-              </div>
+              <input
+                type="text"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
+                required
+                placeholder="ex. a.targaryen"
+                className="w-full rounded-xl bg-slate-900/60 border border-slate-700/80 focus:border-sky-400 focus:ring-2 focus:ring-sky-500/40 px-3.5 py-2.5 text-[13px] text-slate-50 outline-none transition-all duration-200"
+              />
             </div>
 
             <div className="space-y-1 text-xs">
-              <label className="font-medium text-slate-200">
-                Mot de passe
-              </label>
-              <div className="relative">
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  placeholder="••••••••"
-                  className="w-full rounded-xl bg-slate-900/60 border border-slate-700/80 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/40 px-3.5 py-2.5 text-[13px] text-slate-50 outline-none transition-all duration-200"
-                />
-              </div>
+              <label className="font-medium text-slate-200">Mot de passe</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                placeholder="••••••••"
+                className="w-full rounded-xl bg-slate-900/60 border border-slate-700/80 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/40 px-3.5 py-2.5 text-[13px] text-slate-50 outline-none transition-all duration-200"
+              />
             </div>
 
             {error && (
