@@ -44,6 +44,8 @@ export default function RegisterPage() {
       );
 
       const data = await res.json();
+localStorage.setItem("doj_token", data.token);
+localStorage.setItem("doj_user", JSON.stringify(data.user));
 
       if (!res.ok) {
         setError(data.message || "Erreur lors de l’inscription.");

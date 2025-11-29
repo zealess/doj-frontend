@@ -1,8 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppHeader from "@/components/AppHeader";
+
+interface DiscordInfo {
+  username?: string | null;
+}
 
 const Card = ({
   title,
@@ -10,34 +14,42 @@ const Card = ({
   description,
   badge,
   onClick,
+  disabled = false,
 }: {
   title: string;
   subtitle?: string;
   description?: string;
   badge?: string;
   onClick?: () => void;
+  disabled?: boolean;
 }) => (
   <button
     type="button"
-    onClick={onClick}
-    className="
+    onClick={disabled ? undefined : onClick}
+    disabled={disabled}
+    className={`
       group relative w-full text-left
-      rounded-2xl border border-slate-800/80 bg-slate-950/60
+      rounded-2xl border bg-slate-950/60
       px-4 py-4 md:px-5 md:py-5
       flex flex-col gap-1.5
       shadow-[0_18px_45px_rgba(15,23,42,0.9)]
-      hover:border-sky-500/70 hover:bg-slate-950/90
-      transition-all duration-200
-      cursor-pointer overflow-hidden min-h-[120px]
-      transform-gpu hover:-translate-y-1 hover:scale-[1.02]
-    "
+      min-h-[120px] overflow-hidden transform-gpu
+      ${
+        disabled
+          ? "border-slate-800/60 opacity-60 cursor-not-allowed"
+          : "border-slate-800/80 hover:border-sky-500/70 hover:bg-slate-950/90 cursor-pointer hover:-translate-y-1 hover:scale-[1.02]"
+      }
+    `}
   >
-    {/* glow top */}
-    <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-500/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-    {/* radial glow */}
-    <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-      <div className="absolute -inset-16 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.14),_transparent_55%)]" />
-    </div>
+    {/* glow top & radial glow uniquement si pas disabled */}
+    {!disabled && (
+      <>
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-500/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div className="absolute -inset-16 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.14),_transparent_55%)]" />
+        </div>
+      </>
+    )}
 
     <div className="flex items-center justify-between gap-2 relative z-[1]">
       <div>
@@ -62,11 +74,19 @@ const Card = ({
     )}
 
     <div className="relative z-[1] mt-2 flex justify-end">
-      <span className="inline-flex items-center gap-1 text-[10px] text-slate-500 group-hover:text-sky-300 transition-colors duration-200">
-        Accéder
-        <span className="inline-block translate-x-0 group-hover:translate-x-1 transition-transform duration-200">
-          →
-        </span>
+      <span
+        className={`inline-flex items-center gap-1 text-[10px] ${
+          disabled
+            ? "text-slate-600"
+            : "text-slate-500 group-hover:text-sky-300 transition-colors duration-200"
+        }`}
+      >
+        {disabled ? "Liaison Discord requise" : "Accéder"}
+        {!disabled && (
+          <span className="inline-block translate-x-0 group-hover:translate-x-1 transition-transform duration-200">
+            →
+          </span>
+        )}
       </span>
     </div>
   </button>
@@ -74,15 +94,50 @@ const Card = ({
 
 export default function DashboardPage() {
   const router = useRouter();
+  const [isDiscordLinked, setIsDiscordLinked] = useState(false);
+  const [discordInfo, setDiscordInfo] = useState<DiscordInfo | null>(null);
 
-  // Protection simple côté client : si pas de token, retour login
+  // Protection simple côté client + récupération infos Discord
   useEffect(() => {
     const token =
       typeof window !== "undefined" ? localStorage.getItem("doj_token") : null;
     if (!token) {
       router.push("/");
+      return;
+    }
+
+    if (typeof window !== "undefined") {
+      const storedUser = localStorage.getItem("doj_user");
+      if (storedUser) {
+        try {
+          const user = JSON.parse(storedUser);
+          setIsDiscordLinked(!!user.discordLinked);
+          setDiscordInfo({
+            username: user.discordUsername ?? null,
+          });
+        } catch {
+          // ignore parse error
+        }
+      }
     }
   }, [router]);
+
+  const handleDiscordLink = () => {
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("doj_token") : null;
+    if (!token) return;
+
+    const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL;
+    if (!apiBase) {
+      console.error("NEXT_PUBLIC_API_BASE_URL manquant");
+      return;
+    }
+
+    // On envoie le token au backend qui fera la redirection vers Discord
+    window.location.href = `${apiBase}/api/discord/login?token=${encodeURIComponent(
+      token
+    )}`;
+  };
 
   return (
     <main className="min-h-screen body-gradient relative flex items-stretch justify-center overflow-hidden">
@@ -109,9 +164,31 @@ export default function DashboardPage() {
                   <h2 className="text-sm md:text-base font-semibold text-slate-50">
                     Outils internes de la magistrature
                   </h2>
-                  <p className="text-[11px] text-slate-500">
-                    Accès rapide aux outils du quotidien.
-                  </p>
+
+                  {/* Lien Discord */}
+                  {isDiscordLinked ? (
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/60 text-[11px] text-emerald-300">
+                      <span className="h-4 w-4 bg-[url('/discord.svg')] bg-contain bg-center bg-no-repeat" />
+                      <span>
+                        Compte Discord lié
+                        {discordInfo?.username ? (
+                          <span className="text-slate-300">
+                            {" "}
+                            · {discordInfo.username}
+                          </span>
+                        ) : null}
+                      </span>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleDiscordLink}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/70 border border-sky-500/70 text-[11px] text-sky-300 hover:bg-sky-500/10 hover:border-sky-400 transition-all duration-200"
+                    >
+                      <span className="h-4 w-4 bg-[url('/discord.svg')] bg-contain bg-center bg-no-repeat" />
+                      <span>Lier mon compte Discord</span>
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -121,30 +198,35 @@ export default function DashboardPage() {
                   title="Calculatrice"
                   description="Effectuer rapidement des calculs RP (amendes, intérêts, durées de peine…)."
                   badge="À venir"
+                  disabled={!isDiscordLinked}
                 />
                 <Card
                   subtitle="Outils"
                   title="Comptabilité"
                   description="Suivi des honoraires, frais de justice et mouvements financiers internes."
                   badge="À venir"
+                  disabled={!isDiscordLinked}
                 />
                 <Card
                   subtitle="Outils"
                   title="CAD"
                   description="Accès au CAD du DOJ : dossiers en cours, décisions et historiques."
                   badge="À venir"
+                  disabled={!isDiscordLinked}
                 />
                 <Card
                   subtitle="Documentation"
                   title="Guide – Législatif, Exécutif & Judiciaire"
                   description="Accès centralisé aux textes RP : lois, procédures, guides internes."
                   badge="À venir"
+                  disabled={!isDiscordLinked}
                 />
                 <Card
                   subtitle="Communication"
                   title="Messagerie interne"
                   description="Échanger avec les magistrats, greffiers et membres du DOJ."
                   badge="À venir"
+                  disabled={!isDiscordLinked}
                 />
               </div>
             </section>
@@ -171,24 +253,28 @@ export default function DashboardPage() {
                   title="Comparutions immédiates"
                   description="Création et suivi des dossiers de CI en temps réel."
                   badge="À venir"
+                  disabled={!isDiscordLinked}
                 />
                 <Card
                   subtitle="Dossiers"
                   title="Procès"
                   description="Gestion des audiences planifiées et des décisions rendues."
                   badge="À venir"
+                  disabled={!isDiscordLinked}
                 />
                 <Card
                   subtitle="Dossiers"
                   title="Dossier 10-10"
                   description="Suivi des dossiers complexes nécessitant une instruction approfondie."
                   badge="À venir"
+                  disabled={!isDiscordLinked}
                 />
                 <Card
                   subtitle="Casier"
                   title="Effacement de casier"
                   description="Traitement des demandes d’effacement de casier judiciaire RP."
                   badge="À venir"
+                  disabled={!isDiscordLinked}
                 />
               </div>
             </section>
@@ -216,12 +302,14 @@ export default function DashboardPage() {
                 title="Mon profil magistrat"
                 description="Consulter et modifier les informations de votre profil DOJ."
                 badge="À venir"
+                disabled={!isDiscordLinked}
               />
               <Card
                 subtitle="Annuaire"
                 title="Effectif & organigramme"
                 description="Liste des magistrats, greffiers et postes au sein du DOJ."
                 badge="À venir"
+                disabled={!isDiscordLinked}
               />
             </div>
           </section>
