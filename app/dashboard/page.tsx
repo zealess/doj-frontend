@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import AppHeader from "@/components/AppHeader";
 
 const API_BASE_URL = "https://doj-backend-production.up.railway.app";
@@ -43,7 +43,6 @@ const Card = ({
       }
     `}
   >
-    {/* glow top & radial glow uniquement si pas disabled */}
     {!disabled && (
       <>
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-500/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -96,10 +95,46 @@ const Card = ({
 
 export default function DashboardPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [isDiscordLinked, setIsDiscordLinked] = useState(false);
   const [discordInfo, setDiscordInfo] = useState<DiscordInfo | null>(null);
 
-  // Protection simple côté client + récupération infos Discord
+  // Récupération / refresh de l'utilisateur depuis le backend
+  const refreshUserFromBackend = async (token: string) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/me`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        console.error("Erreur /api/auth/me:", res.status);
+        return;
+      }
+
+      const data = await res.json();
+      const user = data.user;
+
+      if (user) {
+        // On met à jour le localStorage pour les prochaines fois
+        if (typeof window !== "undefined") {
+          localStorage.setItem("doj_user", JSON.stringify(user));
+        }
+
+        setIsDiscordLinked(!!user.discordLinked);
+        setDiscordInfo({
+          username: user.discordUsername ?? null,
+        });
+      }
+    } catch (err) {
+      console.error("Erreur de fetch /api/auth/me:", err);
+    }
+  };
+
+  // Protection + init état Discord
   useEffect(() => {
     const token =
       typeof window !== "undefined" ? localStorage.getItem("doj_token") : null;
@@ -108,31 +143,39 @@ export default function DashboardPage() {
       return;
     }
 
-    if (typeof window !== "undefined") {
-      const storedUser = localStorage.getItem("doj_user");
-      if (storedUser) {
-        try {
-          const user = JSON.parse(storedUser);
-          setIsDiscordLinked(!!user.discordLinked);
-          setDiscordInfo({
-            username: user.discordUsername ?? null,
-          });
-        } catch {
-          // ignore parse error
+    const discordStatus = searchParams?.get("discord");
+
+    if (discordStatus === "linked") {
+      // On vient de terminer l'OAuth Discord → on recharge l'utilisateur depuis le backend
+      refreshUserFromBackend(token);
+    } else {
+      // Cas normal : on lit les infos déjà stockées
+      if (typeof window !== "undefined") {
+        const storedUser = localStorage.getItem("doj_user");
+        if (storedUser) {
+          try {
+            const user = JSON.parse(storedUser);
+            setIsDiscordLinked(!!user.discordLinked);
+            setDiscordInfo({
+              username: user.discordUsername ?? null,
+            });
+          } catch {
+            // ignore parse error
+          }
         }
       }
     }
-  }, [router]);
+  }, [router, searchParams]);
 
   const handleDiscordLink = () => {
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("doj_token") : null;
-  if (!token) return;
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("doj_token") : null;
+    if (!token) return;
 
-  window.location.href = `${API_BASE_URL}/api/discord/login?token=${encodeURIComponent(
-    token
-  )}`;
-};
+    window.location.href = `${API_BASE_URL}/api/discord/login?token=${encodeURIComponent(
+      token
+    )}`;
+  };
 
   return (
     <main className="min-h-screen body-gradient relative flex items-stretch justify-center overflow-hidden">
@@ -160,42 +203,44 @@ export default function DashboardPage() {
                     Outils internes de la magistrature
                   </h2>
 
-                  {/* Lien Discord */}
                   {isDiscordLinked ? (
-  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/60 text-[11px] text-emerald-300">
-    <span className="inline-flex h-4 w-4 items-center justify-center">
-      <svg
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-        className="h-4 w-4 fill-emerald-300"
-      >
-        <path d="M20.317 4.369A18.47 18.47 0 0 0 16.556 3c-.2.356-.424.832-.582 1.214a17.2 17.2 0 0 0-3.947 0A12.52 12.52 0 0 0 11.445 3c-1.32.24-2.63.6-3.862 1.105C4.036 9.063 3.178 13.59 3.513 18.06a18.39 18.39 0 0 0 4.986 2.54c.4-.54.754-1.115 1.06-1.72a11.9 11.9 0 0 1-1.66-.8c.14-.1.276-.21.407-.32 3.2 1.5 6.67 1.5 9.84 0 .135.11.27.22.407.32-.53.31-1.087.58-1.665.8.306.605.66 1.18 1.06 1.72a18.26 18.26 0 0 0 5.0-2.57c.41-5.25-.7-9.74-2.631-13.69ZM9.68 15.33c-.96 0-1.754-.88-1.754-1.96 0-1.08.774-1.97 1.754-1.97.987 0 1.774.89 1.754 1.97 0 1.08-.767 1.96-1.754 1.96Zm4.64 0c-.96 0-1.754-.88-1.754-1.96 0-1.08.774-1.97 1.754-1.97.987 0 1.774.89 1.754 1.97 0 1.08-.767 1.96-1.754 1.96Z" />
-      </svg>
-    </span>
-    <span>
-      Compte Discord lié
-      {discordInfo?.username ? (
-        <span className="text-slate-300"> · {discordInfo.username}</span>
-      ) : null}
-    </span>
-  </div>
-) : (
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/60 text-[11px] text-emerald-300">
+                      <span className="inline-flex h-4 w-4 items-center justify-center">
+                        <svg
+                          viewBox="0 0 24 24"
+                          aria-hidden="true"
+                          className="h-4 w-4 fill-emerald-300"
+                        >
+                          <path d="M20.317 4.369A18.47 18.47 0 0 0 16.556 3c-.2.356-.424.832-.582 1.214a17.2 17.2 0 0 0-3.947 0A12.52 12.52 0 0 0 11.445 3c-1.32.24-2.63.6-3.862 1.105C4.036 9.063 3.178 13.59 3.513 18.06a18.39 18.39 0 0 0 4.986 2.54c.4-.54.754-1.115 1.06-1.72a11.9 11.9 0 0 1-1.66-.8c.14-.1.276-.21.407-.32 3.2 1.5 6.67 1.5 9.84 0 .135.11.27.22.407.32-.53.31-1.087.58-1.665.8.306.605.66 1.18 1.06 1.72a18.26 18.26 0 0 0 5-2.57c.41-5.25-.7-9.74-2.631-13.69ZM9.68 15.33c-.96 0-1.754-.88-1.754-1.96 0-1.08.774-1.97 1.754-1.97.987 0 1.774.89 1.754 1.97 0 1.08-.767 1.96-1.754 1.96Zm4.64 0c-.96 0-1.754-.88-1.754-1.96 0-1.08.774-1.97 1.754-1.97.987 0 1.774.89 1.754 1.97 0 1.08-.767 1.96-1.754 1.96Z" />
+                        </svg>
+                      </span>
+                      <span>
+                        Compte Discord lié
+                        {discordInfo?.username ? (
+                          <span className="text-slate-300">
+                            {" "}
+                            · {discordInfo.username}
+                          </span>
+                        ) : null}
+                      </span>
+                    </div>
+                  ) : (
                     <button
-  type="button"
-  onClick={handleDiscordLink}
-  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/70 border border-sky-500/70 text-[11px] text-sky-300 hover:bg-sky-500/10 hover:border-sky-400 transition-all duration-200"
->
-  <span className="inline-flex h-4 w-4 items-center justify-center">
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      className="h-4 w-4 fill-sky-300"
-    >
-      <path d="M20.317 4.369A18.47 18.47 0 0 0 16.556 3c-.2.356-.424.832-.582 1.214a17.2 17.2 0 0 0-3.947 0A12.52 12.52 0 0 0 11.445 3c-1.32.24-2.63.6-3.862 1.105C4.036 9.063 3.178 13.59 3.513 18.06a18.39 18.39 0 0 0 4.986 2.54c.4-.54.754-1.115 1.06-1.72a11.9 11.9 0 0 1-1.66-.8c.14-.1.276-.21.407-.32 3.2 1.5 6.67 1.5 9.84 0 .135.11.27.22.407.32-.53.31-1.087.58-1.665.8.306.605.66 1.18 1.06 1.72a18.26 18.26 0 0 0 5.0-2.57c.41-5.25-.7-9.74-2.631-13.69ZM9.68 15.33c-.96 0-1.754-.88-1.754-1.96 0-1.08.774-1.97 1.754-1.97.987 0 1.774.89 1.754 1.97 0 1.08-.767 1.96-1.754 1.96Zm4.64 0c-.96 0-1.754-.88-1.754-1.96 0-1.08.774-1.97 1.754-1.97.987 0 1.774.89 1.754 1.97 0 1.08-.767 1.96-1.754 1.96Z" />
-    </svg>
-  </span>
-  <span>Lier mon compte Discord</span>
-</button>
+                      type="button"
+                      onClick={handleDiscordLink}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/70 border border-sky-500/70 text-[11px] text-sky-300 hover:bg-sky-500/10 hover:border-sky-400 transition-all duration-200"
+                    >
+                      <span className="inline-flex h-4 w-4 items-center justify-center">
+                        <svg
+                          viewBox="0 0 24 24"
+                          aria-hidden="true"
+                          className="h-4 w-4 fill-sky-300"
+                        >
+                          <path d="M20.317 4.369A18.47 18.47 0 0 0 16.556 3c-.2.356-.424.832-.582 1.214a17.2 17.2 0 0 0-3.947 0A12.52 12.52 0 0 0 11.445 3c-1.32.24-2.63.6-3.862 1.105C4.036 9.063 3.178 13.59 3.513 18.06a18.39 18.39 0 0 0 4.986 2.54c.4-.54.754-1.115 1.06-1.72a11.9 11.9 0 0 1-1.66-.8c.14-.1.276-.21.407-.32 3.2 1.5 6.67 1.5 9.84 0 .135.11.27.22.407.32-.53.31-1.087.58-1.665.8.306.605.66 1.18 1.06 1.72a18.26 18.26 0 0 0 5-2.57c.41-5.25-.7-9.74-2.631-13.69ZM9.68 15.33c-.96 0-1.754-.88-1.754-1.96 0-1.08.774-1.97 1.754-1.97.987 0 1.774.89 1.754 1.97 0 1.08-.767 1.96-1.754 1.96Zm4.64 0c-.96 0-1.754-.88-1.754-1.96 0-1.08.774-1.97 1.754-1.97.987 0 1.774.89 1.754 1.97 0 1.08-.767 1.96-1.754 1.96Z" />
+                        </svg>
+                      </span>
+                      <span>Lier mon compte Discord</span>
+                    </button>
                   )}
                 </div>
               </div>
@@ -245,7 +290,7 @@ export default function DashboardPage() {
                 <p className="text-[11px] uppercase tracking-[0.23em] text-slate-500">
                   Travail
                 </p>
-                <div className="flex flex-wrap items-end justify-between gap-2">
+              <div className="flex flex-wrap items-end justify-between gap-2">
                   <h2 className="text-sm md:text-base font-semibold text-slate-50">
                     Gestion des dossiers et audiences
                   </h2>
