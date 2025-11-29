@@ -1,201 +1,278 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
-interface UserInfo {
+interface User {
   username: string;
   email: string;
-  role: string;
 }
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [user, setUser] = useState<UserInfo | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem("doj_user");
-      if (raw) {
-        setUser(JSON.parse(raw));
-      }
-    } catch {
-      // ignore
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("doj_token")
+        : null;
+
+    if (!token) {
+      router.push("/");
+      return;
     }
-  }, []);
+
+    const storedUser =
+      typeof window !== "undefined"
+        ? localStorage.getItem("doj_user")
+        : null;
+
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (e) {
+        console.error("Erreur parsing user", e);
+      }
+    }
+  }, [router]);
 
   const handleLogout = () => {
-    localStorage.removeItem("doj_token");
-    localStorage.removeItem("doj_user");
-    if (typeof document !== "undefined") {
-      document.cookie = "doj_token=; Path=/; Max-Age=0; SameSite=Lax; Secure";
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("doj_token");
+      localStorage.removeItem("doj_user");
+      document.cookie =
+        "doj_token=; Path=/; Max-Age=0; SameSite=Lax; Secure";
     }
     router.push("/");
   };
 
-  return (
-    <main className="min-h-screen body-gradient relative overflow-hidden text-slate-50">
-      {/* Orbes décoratives */}
-      <div className="floating-orb w-72 h-72 bg-sky-500/40 -top-16 left-[-40px]" />
-      <div className="floating-orb w-80 h-80 bg-indigo-500/35 bottom-[-70px] right-[-40px]" />
+  // petit helper pour les cartes
+  const Card = ({
+    title,
+    subtitle,
+    description,
+    onClick,
+    badge,
+  }: {
+    title: string;
+    subtitle?: string;
+    description?: string;
+    badge?: string;
+    onClick?: () => void;
+  }) => (
+    <button
+      type="button"
+      onClick={onClick}
+      className="group text-left w-full glass-card bg-slate-900/70 border border-slate-800/80 hover:border-sky-500/70 hover:bg-slate-900/90 transition-all duration-200 rounded-2xl px-4 py-4 md:px-5 md:py-5 flex flex-col gap-1.5 cursor-pointer"
+    >
+      <div className="flex items-center justify-between gap-2">
+        <div>
+          <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
+            {subtitle}
+          </p>
+          <h3 className="text-sm md:text-base font-semibold text-slate-50">
+            {title}
+          </h3>
+        </div>
+        {badge && (
+          <span className="text-[10px] px-2 py-1 rounded-full bg-sky-500/15 border border-sky-500/50 text-sky-300">
+            {badge}
+          </span>
+        )}
+      </div>
+      {description && (
+        <p className="text-[11px] md:text-xs text-slate-400 mt-1">
+          {description}
+        </p>
+      )}
+    </button>
+  );
 
-      <div className="relative z-10 max-w-6xl mx-auto px-4 py-6 md:py-8">
-        {/* Header */}
-        <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-          <div className="flex items-center gap-4">
-            <div className="badge-orbit h-12 w-12 md:h-14 md:w-14 rounded-full border border-sky-300/60 bg-slate-950/90 flex items-center justify-center text-[10px] md:text-xs font-semibold tracking-[0.18em]">
+  return (
+    <main className="min-h-screen body-gradient relative flex items-stretch justify-center overflow-hidden">
+      {/* Orbes de fond */}
+      <div className="floating-orb w-72 h-72 bg-sky-500/30 -top-10 -left-16" />
+      <div className="floating-orb w-80 h-80 bg-indigo-500/30 bottom-[-60px] right-[-40px]" />
+
+      <div className="relative z-10 w-full max-w-6xl mx-auto px-4 py-4 md:py-8 flex flex-col gap-5">
+        {/* Topbar */}
+        <header className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-full border border-sky-400/60 bg-slate-950/90 flex items-center justify-center text-[11px] font-semibold text-sky-100 shadow-[0_0_20px_rgba(56,189,248,0.55)]">
               DOJ
             </div>
             <div>
-              <p className="text-[11px] uppercase tracking-[0.3em] text-sky-300/80">
-                Department of Justice – San Andreas
+              <p className="text-[11px] uppercase tracking-[0.25em] text-sky-300/80">
+                San Andreas
               </p>
-              <h1 className="text-xl md:text-2xl font-semibold">
-                Tableau de bord interne
+              <h1 className="text-sm md:text-base font-semibold text-slate-50">
+                Portail interne – Dashboard
               </h1>
-              <p className="text-xs text-slate-300/80 mt-1">
-                Vue d&apos;ensemble sur les activités et outils du DOJ.
-              </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             {user && (
               <div className="text-right">
-                <p className="text-sm font-medium">
+                <p className="text-xs font-medium text-slate-100">
                   {user.username}
                 </p>
-                <p className="text-[11px] text-slate-300/80">
-                  {user.role === "admin" ? "Administrateur" : "Membre DOJ"}
-                </p>
+                <p className="text-[11px] text-slate-400">{user.email}</p>
               </div>
             )}
             <button
               onClick={handleLogout}
-              className="text-xs px-3.5 py-2 rounded-xl border border-slate-600/80 bg-slate-900/60 hover:border-red-400/90 hover:bg-red-500/10 hover:text-red-100 transition-all duration-200"
+              className="text-[11px] px-3 py-1.5 rounded-xl bg-slate-900/60 border border-slate-700/80 hover:border-red-500/70 hover:text-red-300 transition-all duration-200"
             >
-              Déconnexion
+              Se déconnecter
             </button>
           </div>
         </header>
 
-        {/* Grille principale */}
-        <section className="grid gap-4 md:grid-cols-3 mb-6">
-          {/* Carte 1 */}
-          <div className="glass-card p-4 md:p-5 col-span-2">
-            <p className="text-[11px] uppercase tracking-[0.22em] text-slate-400/80 mb-1">
-              Espace magistrature
-            </p>
-            <h2 className="text-lg font-semibold mb-2">
-              Gestion des audiences &amp; décisions
-            </h2>
-            <p className="text-sm text-slate-300/90 mb-4">
-              À terme, ce module permettra de visualiser les audiences à venir,
-              les décisions rendues, les registres et les documents officiels
-              associés à chaque affaire.
-            </p>
-            <div className="flex flex-wrap gap-2 text-[11px]">
-              <span className="px-2.5 py-1 rounded-full bg-sky-500/15 border border-sky-400/50">
-                Audiences
-              </span>
-              <span className="px-2.5 py-1 rounded-full bg-indigo-500/15 border border-indigo-400/50">
-                Décisions
-              </span>
-              <span className="px-2.5 py-1 rounded-full bg-violet-500/15 border border-violet-400/50">
-                Registres
-              </span>
-              <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-400/50">
-                Notifications
-              </span>
-            </div>
-          </div>
-
-          {/* Carte 2 */}
-          <div className="glass-card p-4 md:p-5">
-            <p className="text-[11px] uppercase tracking-[0.22em] text-slate-400/80 mb-1">
-              Statut RP
-            </p>
-            <h3 className="text-sm font-semibold mb-3">État du DOJ</h3>
-            <ul className="space-y-2 text-xs text-slate-300/90">
-              <li className="flex justify-between">
-                <span>Sessions de cour</span>
-                <span className="text-sky-300">En configuration</span>
-              </li>
-              <li className="flex justify-between">
-                <span>Intégration fiches magistrats</span>
-                <span className="text-violet-300">À implémenter</span>
-              </li>
-              <li className="flex justify-between">
-                <span>Base de données décisions</span>
-                <span className="text-emerald-300">Structure en cours</span>
-              </li>
-            </ul>
-          </div>
-        </section>
-
-        {/* Deuxième ligne */}
-        <section className="grid gap-4 md:grid-cols-3 mb-6">
-          <div className="glass-card p-4 md:p-5">
-            <p className="text-[11px] uppercase tracking-[0.22em] text-slate-400/80 mb-1">
-              Prochaines fonctionnalités
-            </p>
-            <ul className="mt-2 space-y-2 text-xs text-slate-300/90">
-              <li>• Module de génération automatique d&apos;ordonnances.</li>
-              <li>• Suivi des convocations et des notifications RP.</li>
-              <li>• Historique des connexions et journaux d&apos;activité.</li>
-            </ul>
-          </div>
-
-          <div className="glass-card p-4 md:p-5">
-            <p className="text-[11px] uppercase tracking-[0.22em] text-slate-400/80 mb-1">
-              Raccourcis rapides
-            </p>
-            <div className="mt-3 grid gap-2 text-xs">
-              <button className="w-full text-left px-3 py-2 rounded-lg bg-slate-900/60 border border-slate-700/80 hover:border-sky-400/80 hover:bg-sky-500/10 transition-all duration-200">
-                • Ouvrir l&apos;espace magistrature (à venir)
-              </button>
-              <button className="w-full text-left px-3 py-2 rounded-lg bg-slate-900/60 border border-slate-700/80 hover:border-indigo-400/80 hover:bg-indigo-500/10 transition-all duration-200">
-                • Accéder aux registres de décisions (à venir)
-              </button>
-              <button className="w-full text-left px-3 py-2 rounded-lg bg-slate-900/60 border border-slate-700/80 hover:border-violet-400/80 hover:bg-violet-500/10 transition-all duration-200">
-                • Centre de notifications (à venir)
-              </button>
-            </div>
-          </div>
-
-          <div className="glass-card p-4 md:p-5">
-            <p className="text-[11px] uppercase tracking-[0.22em] text-slate-400/80 mb-1">
-              Profil utilisateur
-            </p>
-            {user ? (
-              <div className="mt-3 text-xs text-slate-300/90 space-y-1.5">
-                <p>
-                  <span className="text-slate-400">Identifiant : </span>
-                  <span>{user.username}</span>
-                </p>
-                <p>
-                  <span className="text-slate-400">Email : </span>
-                  <span>{user.email}</span>
-                </p>
-                <p>
-                  <span className="text-slate-400">Rôle : </span>
-                  <span>{user.role}</span>
-                </p>
+        <div className="flex flex-col lg:flex-row gap-5">
+          {/* Colonne principale */}
+          <div className="flex-1 space-y-5">
+            {/* Section OUTILS */}
+            <section className="glass-card p-4 md:p-5 rounded-2xl">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.23em] text-slate-500">
+                    Outils
+                  </p>
+                  <h2 className="text-sm md:text-base font-semibold text-slate-50">
+                    Outils internes de la magistrature
+                  </h2>
+                </div>
               </div>
-            ) : (
-              <p className="mt-3 text-xs text-slate-400">
-                Les informations du profil seront chargées à partir de la base
-                utilisateur.
-              </p>
-            )}
-          </div>
-        </section>
 
-        <p className="text-[11px] text-slate-400/80 mt-4">
-          Version préliminaire du portail DOJ RP. Ce tableau de bord servira de
-          base pour connecter tous les outils internes (magistrature, greffe,
-          décisions, registres).
-        </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <Card
+                  subtitle="Outils"
+                  title="Calculatrice"
+                  description="Effectuer rapidement des calculs RP (amendes, intérêts, durées de peine…)."
+                  badge="À venir"
+                  // onClick={() => router.push("/outils/calculatrice")}
+                />
+                <Card
+                  subtitle="Outils"
+                  title="Comptabilité"
+                  description="Suivi des honoraires, frais de justice et mouvements financiers internes."
+                  badge="À venir"
+                  // onClick={() => router.push("/outils/comptabilite")}
+                />
+                <Card
+                  subtitle="Outils"
+                  title="CAD"
+                  description="Accès au CAD du DOJ : dossiers en cours, décisions et historiques."
+                  badge="À venir"
+                  // onClick={() => router.push("/outils/cad")}
+                />
+                <Card
+                  subtitle="Documentation"
+                  title="Guide – Législatif, Exécutif & Judiciaire"
+                  description="Accès centralisé aux textes RP : lois, procédures, guides internes."
+                  badge="À venir"
+                  // onClick={() => router.push("/outils/guides")}
+                />
+                <Card
+                  subtitle="Communication"
+                  title="Messagerie interne"
+                  description="Échanger avec les magistrats, greffiers et membres du DOJ."
+                  badge="À venir"
+                  // onClick={() => router.push("/outils/messagerie")}
+                />
+              </div>
+            </section>
+
+            {/* Section TRAVAIL */}
+            <section className="glass-card p-4 md:p-5 rounded-2xl">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.23em] text-slate-500">
+                    Travail
+                  </p>
+                  <h2 className="text-sm md:text-base font-semibold text-slate-50">
+                    Gestion des dossiers et audiences
+                  </h2>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <Card
+                  subtitle="Dossiers"
+                  title="Comparutions immédiates"
+                  description="Création et suivi des dossiers de CI en temps réel."
+                  badge="À venir"
+                  // onClick={() => router.push("/travail/comparution-immediate")}
+                />
+                <Card
+                  subtitle="Dossiers"
+                  title="Procès"
+                  description="Gestion des audiences planifiées et des décisions rendues."
+                  badge="À venir"
+                  // onClick={() => router.push("/travail/proces")}
+                />
+                <Card
+                  subtitle="Dossiers"
+                  title="Dossier 10-10"
+                  description="Suivi des dossiers complexes nécessitant une instruction approfondie."
+                  badge="À venir"
+                  // onClick={() => router.push("/travail/dossier-10-10")}
+                />
+                <Card
+                  subtitle="Casier"
+                  title="Effacement de casier"
+                  description="Traitement des demandes d’effacement de casier judiciaire RP."
+                  badge="À venir"
+                  // onClick={() => router.push("/travail/effacement-casier")}
+                />
+              </div>
+            </section>
+          </div>
+
+          {/* Colonne ANNNUAIRE */}
+          <aside className="w-full lg:w-72 space-y-5">
+            <section className="glass-card p-4 md:p-5 rounded-2xl">
+              <div className="mb-3">
+                <p className="text-[11px] uppercase tracking-[0.23em] text-slate-500">
+                  Annuaire
+                </p>
+                <h2 className="text-sm md:text-base font-semibold text-slate-50">
+                  Accès annuaire interne
+                </h2>
+              </div>
+
+              <div className="space-y-3">
+                <Card
+                  subtitle="Annuaire"
+                  title="Mon profil magistrat"
+                  description="Consulter et modifier les informations de votre profil DOJ."
+                  badge="À venir"
+                  // onClick={() => router.push("/annuaire/profil")}
+                />
+                <Card
+                  subtitle="Annuaire"
+                  title="Effectif & organigramme"
+                  description="Liste des magistrats, greffiers et postes au sein du DOJ."
+                  badge="À venir"
+                  // onClick={() => router.push("/annuaire/effectif")}
+                />
+              </div>
+            </section>
+
+            <section className="glass-card p-4 rounded-2xl text-[11px] text-slate-400">
+              <p className="mb-1 font-medium text-slate-200">
+                Version Alpha – Portail DOJ
+              </p>
+              <p>
+                Certaines sections sont marquées comme{" "}
+                <span className="text-sky-300">“À venir”</span> et seront
+                activées au fur et à mesure de leur développement.
+              </p>
+            </section>
+          </aside>
+        </div>
       </div>
     </main>
   );
