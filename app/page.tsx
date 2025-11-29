@@ -65,10 +65,16 @@ export default function LoginPage() {
       <div className="relative z-10 w-full max-w-5xl px-4 py-10 md:py-14 flex flex-col md:flex-row gap-8 items-center md:items-stretch">
         {/* Panneau gauche : identité DOJ */}
         <section className="glass-card w-full md:w-1/2 p-6 md:p-8 flex flex-col justify-between">
-          <div className="flex items-center gap-4 mb-8">
-            <div className="badge-orbit h-14 w-14 md:h-16 md:w-16 rounded-full border border-sky-300/50 bg-slate-950/80 flex items-center justify-center text-xs md:text-sm font-semibold tracking-[0.18em]">
-              DOJ
-            </div>
+          <div className="relative">
+  <img
+    src="/logo-doj.png" // ← place ton logo dans /public/logo-doj.png
+    alt="Logo DOJ"
+    className="w-16 h-16 object-contain drop-shadow-[0_0_15px_rgba(0,120,255,0.6)]"
+  />
+
+  {/* effet halo */}
+  <div className="absolute inset-0 rounded-full blur-2xl opacity-50 bg-blue-500/30"></div>
+</div>
             <div>
               <p className="text-[11px] uppercase tracking-[0.3em] text-sky-300/80">
                 San Andreas
