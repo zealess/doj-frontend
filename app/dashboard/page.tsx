@@ -99,7 +99,7 @@ export default function DashboardPage() {
       <div className="floating-orb w-72 h-72 bg-sky-500/30 -top-10 -left-20" />
       <div className="floating-orb w-80 h-80 bg-indigo-500/30 bottom-[-80px] right-[-40px]" />
 
-      <div className="relative z-10 w-full max-w-5xl mx-auto px-4 md:px-6 lg:px-8 py-10 md:py-12 lg:py-16 space-y-8 md:space-y-10">
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 md:px-8 lg:px-10 xl:px-12 py-10 md:py-12 lg:py-16 space-y-8 md:space-y-10">
         {/* Topbar */}
         <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
