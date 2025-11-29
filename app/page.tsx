@@ -106,31 +106,33 @@ export default function LoginPage() {
 
         {/* Panneau droit : formulaire de connexion */}
         <section className="glass-card w-full md:w-1/2 p-6 md:p-8 flex flex-col">
-          <header className="mb-6">
-            <p className="text-xs uppercase tracking-[0.22em] text-slate-400/80 mb-1">
-              Connexion
-            </p>
-            <h2 className="text-lg md:text-xl font-semibold text-slate-50">
-              Se connecter à son espace
-            </h2>
-            <p className="text-xs text-slate-400 mt-1">
-              Entrez vos identifiants personnels pour accéder au portail.
-            </p>
-          </header>
+  {/* CTA d'abord */}
+  <button
+    type="button"
+    onClick={() => router.push("/register")}
+    className="mb-5 w-full text-xs font-medium text-sky-100 bg-sky-600/80 hover:bg-sky-500 transition-all duration-300 py-2.5 rounded-xl shadow-[0_10px_30px_rgba(56,189,248,0.35)]"
+  >
+    Créer un compte DOJ
+  </button>
 
-          <button
-            type="button"
-            onClick={() => router.push("/register")}
-            className="mb-5 w-full text-xs font-medium text-sky-100 bg-sky-600/80 hover:bg-sky-500 transition-all duration-300 py-2.5 rounded-xl shadow-[0_10px_30px_rgba(56,189,248,0.35)]"
-          >
-            Créer un compte DOJ
-          </button>
+  <div className="flex items-center gap-3 mb-5 text-[11px] text-slate-500">
+    <span className="h-px flex-1 bg-slate-600" />
+    <span>ou se connecter</span>
+    <span className="h-px flex-1 bg-slate-600" />
+  </div>
 
-          <div className="flex items-center gap-3 mb-5 text-[11px] text-slate-500">
-            <span className="h-px flex-1 bg-slate-600" />
-            <span>ou se connecter</span>
-            <span className="h-px flex-1 bg-slate-600" />
-          </div>
+  {/* Titre lié au formulaire, juste au-dessus du form */}
+  <header className="mb-4">
+    <p className="text-xs uppercase tracking-[0.22em] text-slate-400/80 mb-1">
+      Connexion
+    </p>
+    <h2 className="text-lg md:text-xl font-semibold text-slate-50">
+      Se connecter à son espace
+    </h2>
+    <p className="text-xs text-slate-400 mt-1">
+      Entrez vos identifiants personnels pour accéder au portail.
+    </p>
+  </header>
 
           <form onSubmit={handleSubmit} className="space-y-4 flex-1 flex flex-col">
             <div className="space-y-1 text-xs">

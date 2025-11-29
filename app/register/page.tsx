@@ -111,25 +111,33 @@ export default function RegisterPage() {
 
         {/* Formulaire */}
         <section className="glass-card w-full md:w-1/2 p-6 md:p-8 flex flex-col">
-          <header className="mb-6">
-            <p className="text-xs uppercase tracking-[0.23em] text-slate-400/80 mb-1">
-              Informations du compte
-            </p>
-            <h2 className="text-lg md:text-xl font-semibold text-slate-50">
-              Créer un accès sécurisé
-            </h2>
-            <p className="text-xs text-slate-400 mt-1">
-              Complétez les champs ci-dessous pour générer vos identifiants.
-            </p>
-          </header>
+  {/* CTA d'abord */}
+  <button
+    type="button"
+    onClick={() => router.push("/")}
+    className="mb-5 w-full text-xs font-medium text-sky-100 bg-slate-900/60 hover:bg-slate-800/80 border border-slate-700/80 transition-all duration-300 py-2.5 rounded-xl"
+  >
+    J&apos;ai déjà un compte
+  </button>
 
-          <button
-            type="button"
-            onClick={() => router.push("/")}
-            className="mb-5 w-full text-xs font-medium text-sky-100 bg-slate-900/60 hover:bg-slate-800/80 border border-slate-700/80 transition-all duration-300 py-2.5 rounded-xl"
-          >
-            J&apos;ai déjà un compte
-          </button>
+  <div className="flex items-center gap-3 mb-5 text-[11px] text-slate-500">
+    <span className="h-px flex-1 bg-slate-600" />
+    <span>ou créer un accès</span>
+    <span className="h-px flex-1 bg-slate-600" />
+  </div>
+
+  {/* Titre juste au-dessus du formulaire */}
+  <header className="mb-4">
+    <p className="text-xs uppercase tracking-[0.23em] text-slate-400/80 mb-1">
+      Informations du compte
+    </p>
+    <h2 className="text-lg md:text-xl font-semibold text-slate-50">
+      Créer un accès sécurisé
+    </h2>
+    <p className="text-xs text-slate-400 mt-1">
+      Complétez les champs ci-dessous pour générer vos identifiants.
+    </p>
+  </header>
 
           <form onSubmit={handleSubmit} className="space-y-4 flex-1 flex flex-col">
             <div className="space-y-1 text-xs">
