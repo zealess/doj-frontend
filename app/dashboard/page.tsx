@@ -63,11 +63,27 @@ export default function DashboardPage() {
     <button
       type="button"
       onClick={onClick}
-      className="group relative w-full text-left rounded-2xl border border-slate-800/80 bg-slate-950/60 px-4 py-4 md:px-5 md:py-5 flex flex-col gap-1.5 shadow-[0_18px_45px_rgba(15,23,42,0.9)] hover:border-sky-500/70 hover:bg-slate-950/90 transition-all duration-200 cursor-pointer overflow-hidden min-h-[120px]"
+      className="
+        group relative w-full text-left
+        rounded-2xl border border-slate-800/80 bg-slate-950/60
+        px-4 py-4 md:px-5 md:py-5
+        flex flex-col gap-1.5
+        shadow-[0_18px_45px_rgba(15,23,42,0.9)]
+        hover:border-sky-500/70 hover:bg-slate-950/90
+        transition-all duration-200
+        cursor-pointer overflow-hidden min-h-[120px]
+        transform-gpu hover:-translate-y-1 hover:scale-[1.02]
+      "
     >
+      {/* Glow de bord supérieur */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-500/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-      <div className="flex items-center justify-between gap-2">
+      {/* Glow radial léger */}
+      <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <div className="absolute -inset-16 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.14),_transparent_55%)]" />
+      </div>
+
+      <div className="flex items-center justify-between gap-2 relative z-[1]">
         <div>
           {subtitle && (
             <p className="text-[10px] uppercase tracking-[0.24em] text-slate-500 mb-0.5">
@@ -86,10 +102,20 @@ export default function DashboardPage() {
       </div>
 
       {description && (
-        <p className="text-[11px] md:text-xs text-slate-400 mt-1">
+        <p className="text-[11px] md:text-xs text-slate-400 mt-1 relative z-[1]">
           {description}
         </p>
       )}
+
+      {/* Petite flèche de navigation qui glisse à droite au hover */}
+      <div className="relative z-[1] mt-2 flex justify-end">
+        <span className="inline-flex items-center gap-1 text-[10px] text-slate-500 group-hover:text-sky-300 transition-colors duration-200">
+          Accéder
+          <span className="inline-block translate-x-0 group-hover:translate-x-1 transition-transform duration-200">
+            →
+          </span>
+        </span>
+      </div>
     </button>
   );
 
@@ -99,42 +125,59 @@ export default function DashboardPage() {
       <div className="floating-orb w-72 h-72 bg-sky-500/30 -top-10 -left-20" />
       <div className="floating-orb w-80 h-80 bg-indigo-500/30 bottom-[-80px] right-[-40px]" />
 
-        <div className="relative z-10 w-full px-6 md:px-10 lg:px-16 xl:px-24 py-10 md:py-12 lg:py-16 space-y-8 md:space-y-10">
-        {/* Topbar */}
-        <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-full border border-sky-400/60 bg-slate-950/90 flex items-center justify-center text-[11px] font-semibold text-sky-100 shadow-[0_0_20px_rgba(56,189,248,0.55)]">
-              DOJ
-            </div>
-            <div>
-              <p className="text-[11px] uppercase tracking-[0.25em] text-sky-300/80">
-                San Andreas
-              </p>
-              <h1 className="text-sm md:text-base font-semibold text-slate-50">
-                Portail interne – Dashboard
-              </h1>
-            </div>
-          </div>
+      {/* Conteneur FULL WIDTH (avec padding) */}
+      <div className="relative z-10 w-full px-6 md:px-10 lg:px-16 xl:px-24 py-10 md:py-12 lg:py-16 space-y-8 md:space-y-10">
+        {/* HEADER STICKY */}
+        <div className="sticky top-0 z-30 -mx-6 md:-mx-10 lg:-mx-16 xl:-mx-24 mb-6">
+          {/* Fond dégradé + blur pour donner un effet HUD */}
+          <div className="bg-gradient-to-b from-slate-950/95 via-slate-950/80 to-transparent backdrop-blur-md border-b border-slate-800/80 px-6 md:px-10 lg:px-16 xl:px-24 pt-4 pb-3">
+            <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-full border border-sky-400/60 bg-slate-950/90 flex items-center justify-center text-[11px] font-semibold text-sky-100 shadow-[0_0_20px_rgba(56,189,248,0.55)]">
+                  DOJ
+                </div>
+                <div className="flex flex-col gap-1">
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.25em] text-sky-300/80">
+                      San Andreas
+                    </p>
+                    <h1 className="text-sm md:text-base font-semibold text-slate-50">
+                      Portail interne – Dashboard
+                    </h1>
+                  </div>
 
-          <div className="flex items-center gap-3 justify-between md:justify-end">
-            {user && (
-              <div className="text-right">
-                <p className="text-xs font-medium text-slate-100">
-                  {user.username}
-                </p>
-                <p className="text-[11px] text-slate-400">
-                  {user.email}
-                </p>
+                  {/* Breadcrumb stylé */}
+                  <div className="flex items-center gap-2 text-[11px] text-slate-500">
+                    <span className="hover:text-sky-300 cursor-default transition-colors">
+                      Accueil
+                    </span>
+                    <span className="text-slate-600">/</span>
+                    <span className="text-sky-300">Dashboard</span>
+                  </div>
+                </div>
               </div>
-            )}
-            <button
-              onClick={handleLogout}
-              className="text-[11px] px-3 py-1.5 rounded-xl bg-slate-900/60 border border-slate-700/80 hover:border-red-500/70 hover:text-red-300 transition-all duration-200"
-            >
-              Se déconnecter
-            </button>
+
+              <div className="flex items-center gap-3 justify-between md:justify-end">
+                {user && (
+                  <div className="text-right">
+                    <p className="text-xs font-medium text-slate-100">
+                      {user.username}
+                    </p>
+                    <p className="text-[11px] text-slate-400">
+                      {user.email}
+                    </p>
+                  </div>
+                )}
+                <button
+                  onClick={handleLogout}
+                  className="text-[11px] px-3 py-1.5 rounded-xl bg-slate-900/60 border border-slate-700/80 hover:border-red-500/70 hover:text-red-300 transition-all duration-200"
+                >
+                  Se déconnecter
+                </button>
+              </div>
+            </header>
           </div>
-        </header>
+        </div>
 
         {/* CONTENU */}
         <div className="space-y-7 md:space-y-8">
@@ -235,13 +278,13 @@ export default function DashboardPage() {
             </section>
           </div>
 
-          {/* ANNUAIRE en dessous, full width */}
+          {/* ANNUAIRE */}
           <section className="glass-card rounded-3xl border border-slate-800/80 bg-slate-950/85 px-5 py-5 md:px-7 md:py-7">
             <div className="mb-4 md:mb-5 flex flex-col gap-1">
               <p className="text-[11px] uppercase tracking-[0.23em] text-slate-500">
                 Annuaire
               </p>
-            <div className="flex flex-wrap items-end justify-between gap-2">
+              <div className="flex flex-wrap items-end justify-between gap-2">
                 <h2 className="text-sm md:text-base font-semibold text-slate-50">
                   Accès annuaire interne
                 </h2>
