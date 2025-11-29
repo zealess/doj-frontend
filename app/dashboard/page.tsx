@@ -65,7 +65,6 @@ export default function DashboardPage() {
       onClick={onClick}
       className="group relative w-full text-left rounded-2xl border border-slate-800/80 bg-slate-950/60 px-4 py-4 md:px-5 md:py-5 flex flex-col gap-1.5 shadow-[0_18px_45px_rgba(15,23,42,0.9)] hover:border-sky-500/70 hover:bg-slate-950/90 transition-all duration-200 cursor-pointer overflow-hidden min-h-[120px]"
     >
-      {/* fine ligne glow */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-500/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
       <div className="flex items-center justify-between gap-2">
@@ -137,109 +136,112 @@ export default function DashboardPage() {
           </div>
         </header>
 
-        {/* Colonne unique, centrée */}
+        {/* CONTENU */}
         <div className="space-y-7 md:space-y-8">
-          {/* OUTILS */}
-          <section className="glass-card rounded-3xl border border-slate-800/80 bg-slate-950/75 px-5 py-5 md:px-7 md:py-7">
-            <div className="mb-4 md:mb-5 flex flex-col gap-1">
-              <p className="text-[11px] uppercase tracking-[0.23em] text-slate-500">
-                Outils
-              </p>
-              <div className="flex flex-wrap items-end justify-between gap-2">
-                <h2 className="text-sm md:text-base font-semibold text-slate-50">
-                  Outils internes de la magistrature
-                </h2>
-                <p className="text-[11px] text-slate-500">
-                  Accès rapide aux outils du quotidien.
+          {/* Ligne haute : OUTILS + TRAVAIL */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-7 md:gap-8">
+            {/* OUTILS */}
+            <section className="glass-card rounded-3xl border border-slate-800/80 bg-slate-950/75 px-5 py-5 md:px-7 md:py-7">
+              <div className="mb-4 md:mb-5 flex flex-col gap-1">
+                <p className="text-[11px] uppercase tracking-[0.23em] text-slate-500">
+                  Outils
                 </p>
+                <div className="flex flex-wrap items-end justify-between gap-2">
+                  <h2 className="text-sm md:text-base font-semibold text-slate-50">
+                    Outils internes de la magistrature
+                  </h2>
+                  <p className="text-[11px] text-slate-500">
+                    Accès rapide aux outils du quotidien.
+                  </p>
+                </div>
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
-              <Card
-                subtitle="Outils"
-                title="Calculatrice"
-                description="Effectuer rapidement des calculs RP (amendes, intérêts, durées de peine…)."
-                badge="À venir"
-              />
-              <Card
-                subtitle="Outils"
-                title="Comptabilité"
-                description="Suivi des honoraires, frais de justice et mouvements financiers internes."
-                badge="À venir"
-              />
-              <Card
-                subtitle="Outils"
-                title="CAD"
-                description="Accès au CAD du DOJ : dossiers en cours, décisions et historiques."
-                badge="À venir"
-              />
-              <Card
-                subtitle="Documentation"
-                title="Guide – Législatif, Exécutif & Judiciaire"
-                description="Accès centralisé aux textes RP : lois, procédures, guides internes."
-                badge="À venir"
-              />
-              <Card
-                subtitle="Communication"
-                title="Messagerie interne"
-                description="Échanger avec les magistrats, greffiers et membres du DOJ."
-                badge="À venir"
-              />
-            </div>
-          </section>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+                <Card
+                  subtitle="Outils"
+                  title="Calculatrice"
+                  description="Effectuer rapidement des calculs RP (amendes, intérêts, durées de peine…)."
+                  badge="À venir"
+                />
+                <Card
+                  subtitle="Outils"
+                  title="Comptabilité"
+                  description="Suivi des honoraires, frais de justice et mouvements financiers internes."
+                  badge="À venir"
+                />
+                <Card
+                  subtitle="Outils"
+                  title="CAD"
+                  description="Accès au CAD du DOJ : dossiers en cours, décisions et historiques."
+                  badge="À venir"
+                />
+                <Card
+                  subtitle="Documentation"
+                  title="Guide – Législatif, Exécutif & Judiciaire"
+                  description="Accès centralisé aux textes RP : lois, procédures, guides internes."
+                  badge="À venir"
+                />
+                <Card
+                  subtitle="Communication"
+                  title="Messagerie interne"
+                  description="Échanger avec les magistrats, greffiers et membres du DOJ."
+                  badge="À venir"
+                />
+              </div>
+            </section>
 
-          {/* TRAVAIL */}
-          <section className="glass-card rounded-3xl border border-slate-800/80 bg-slate-950/80 px-5 py-5 md:px-7 md:py-7">
-            <div className="mb-4 md:mb-5 flex flex-col gap-1">
-              <p className="text-[11px] uppercase tracking-[0.23em] text-slate-500">
-                Travail
-              </p>
-              <div className="flex flex-wrap items-end justify-between gap-2">
-                <h2 className="text-sm md:text-base font-semibold text-slate-50">
-                  Gestion des dossiers et audiences
-                </h2>
-                <p className="text-[11px] text-slate-500">
-                  Suivi des CI, procès et dossiers complexes.
+            {/* TRAVAIL */}
+            <section className="glass-card rounded-3xl border border-slate-800/80 bg-slate-950/80 px-5 py-5 md:px-7 md:py-7">
+              <div className="mb-4 md:mb-5 flex flex-col gap-1">
+                <p className="text-[11px] uppercase tracking-[0.23em] text-slate-500">
+                  Travail
                 </p>
+                <div className="flex flex-wrap items-end justify-between gap-2">
+                  <h2 className="text-sm md:text-base font-semibold text-slate-50">
+                    Gestion des dossiers et audiences
+                  </h2>
+                  <p className="text-[11px] text-slate-500">
+                    Suivi des CI, procès et dossiers complexes.
+                  </p>
+                </div>
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
-              <Card
-                subtitle="Dossiers"
-                title="Comparutions immédiates"
-                description="Création et suivi des dossiers de CI en temps réel."
-                badge="À venir"
-              />
-              <Card
-                subtitle="Dossiers"
-                title="Procès"
-                description="Gestion des audiences planifiées et des décisions rendues."
-                badge="À venir"
-              />
-              <Card
-                subtitle="Dossiers"
-                title="Dossier 10-10"
-                description="Suivi des dossiers complexes nécessitant une instruction approfondie."
-                badge="À venir"
-              />
-              <Card
-                subtitle="Casier"
-                title="Effacement de casier"
-                description="Traitement des demandes d’effacement de casier judiciaire RP."
-                badge="À venir"
-              />
-            </div>
-          </section>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+                <Card
+                  subtitle="Dossiers"
+                  title="Comparutions immédiates"
+                  description="Création et suivi des dossiers de CI en temps réel."
+                  badge="À venir"
+                />
+                <Card
+                  subtitle="Dossiers"
+                  title="Procès"
+                  description="Gestion des audiences planifiées et des décisions rendues."
+                  badge="À venir"
+                />
+                <Card
+                  subtitle="Dossiers"
+                  title="Dossier 10-10"
+                  description="Suivi des dossiers complexes nécessitant une instruction approfondie."
+                  badge="À venir"
+                />
+                <Card
+                  subtitle="Casier"
+                  title="Effacement de casier"
+                  description="Traitement des demandes d’effacement de casier judiciaire RP."
+                  badge="À venir"
+                />
+              </div>
+            </section>
+          </div>
 
-          {/* ANNUAIRE */}
+          {/* ANNUAIRE en dessous, full width */}
           <section className="glass-card rounded-3xl border border-slate-800/80 bg-slate-950/85 px-5 py-5 md:px-7 md:py-7">
             <div className="mb-4 md:mb-5 flex flex-col gap-1">
               <p className="text-[11px] uppercase tracking-[0.23em] text-slate-500">
                 Annuaire
               </p>
-              <div className="flex flex-wrap items-end justify-between gap-2">
+            <div className="flex flex-wrap items-end justify-between gap-2">
                 <h2 className="text-sm md:text-base font-semibold text-slate-50">
                   Accès annuaire interne
                 </h2>
