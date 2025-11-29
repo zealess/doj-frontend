@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppHeader from "@/components/AppHeader";
 
+const API_BASE_URL = "https://doj-backend-production.up.railway.app";
+
 interface DiscordInfo {
   username?: string | null;
 }
@@ -123,21 +125,14 @@ export default function DashboardPage() {
   }, [router]);
 
   const handleDiscordLink = () => {
-    const token =
-      typeof window !== "undefined" ? localStorage.getItem("doj_token") : null;
-    if (!token) return;
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("doj_token") : null;
+  if (!token) return;
 
-    const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL;
-    if (!apiBase) {
-      console.error("NEXT_PUBLIC_API_BASE_URL manquant");
-      return;
-    }
-
-    // On envoie le token au backend qui fera la redirection vers Discord
-    window.location.href = `${apiBase}/api/discord/login?token=${encodeURIComponent(
-      token
-    )}`;
-  };
+  window.location.href = `${API_BASE_URL}/api/discord/login?token=${encodeURIComponent(
+    token
+  )}`;
+};
 
   return (
     <main className="min-h-screen body-gradient relative flex items-stretch justify-center overflow-hidden">
