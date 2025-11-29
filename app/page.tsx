@@ -35,6 +35,13 @@ export default function LoginPage() {
       }
 
       localStorage.setItem("doj_token", data.token);
+      
+// On pose aussi un cookie lisible par le middleware
+if (typeof document !== "undefined") {
+  document.cookie = `doj_token=${data.token}; Path=/; Max-Age=${
+    7 * 24 * 60 * 60
+  }; SameSite=Lax; Secure`;
+}
 
       router.push("/dashboard");
     } catch (err) {
