@@ -2,27 +2,61 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Fond général animé léger */
+.body-gradient {
+  background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.15), transparent 55%),
+              radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.18), transparent 55%),
+              radial-gradient(circle at top right, rgba(59, 130, 246, 0.18), transparent 50%),
+              #020617;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Carte effet verre */
+.glass-card {
+  @apply bg-slate-900/40 border border-slate-700/60 rounded-3xl backdrop-blur-2xl shadow-[0_18px_60px_rgba(0,0,0,0.75)];
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Badge rond DOJ animé */
+.badge-orbit {
+  position: relative;
+  isolation: isolate;
+}
+.badge-orbit::before {
+  content: "";
+  position: absolute;
+  inset: -18px;
+  border-radius: 9999px;
+  background: conic-gradient(
+    from 210deg,
+    rgba(56, 189, 248, 0.1),
+    rgba(129, 140, 248, 0.6),
+    rgba(56, 189, 248, 0.1)
+  );
+  opacity: 0.9;
+  filter: blur(8px);
+  z-index: -1;
+  animation: spin-slow 14s linear infinite;
+}
+
+/* petites bulles d’ambiance */
+.floating-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(12px);
+  opacity: 0.55;
+  animation: float-soft 18s ease-in-out infinite alternate;
+}
+
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes float-soft {
+  0% {
+    transform: translate3d(0, 6px, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(15px, -6px, 0) scale(1.04);
+  }
 }
