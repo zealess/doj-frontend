@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import AppHeader from "@/components/AppHeader";
 
 const API_BASE_URL = "https://doj-backend-production.up.railway.app";
@@ -95,12 +95,11 @@ const Card = ({
 
 export default function DashboardPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   const [isDiscordLinked, setIsDiscordLinked] = useState(false);
   const [discordInfo, setDiscordInfo] = useState<DiscordInfo | null>(null);
 
-  // Récupération / refresh de l'utilisateur depuis le backend
+  // Récupère l’utilisateur côté backend (utilisé après OAuth Discord)
   const refreshUserFromBackend = async (token: string) => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/auth/me`, {
@@ -119,7 +118,6 @@ export default function DashboardPage() {
       const user = data.user;
 
       if (user) {
-        // On met à jour le localStorage pour les prochaines fois
         if (typeof window !== "undefined") {
           localStorage.setItem("doj_user", JSON.stringify(user));
         }
@@ -134,22 +132,28 @@ export default function DashboardPage() {
     }
   };
 
-  // Protection + init état Discord
+  // Protection + init / refresh après retour Discord
   useEffect(() => {
     const token =
       typeof window !== "undefined" ? localStorage.getItem("doj_token") : null;
+
     if (!token) {
       router.push("/");
       return;
     }
 
-    const discordStatus = searchParams?.get("discord");
+    // On lit ?discord= depuis l'URL (pas besoin de useSearchParams)
+    let discordStatus: string | null = null;
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      discordStatus = params.get("discord");
+    }
 
     if (discordStatus === "linked") {
       // On vient de terminer l'OAuth Discord → on recharge l'utilisateur depuis le backend
       refreshUserFromBackend(token);
     } else {
-      // Cas normal : on lit les infos déjà stockées
+      // Cas normal : on lit les infos déjà stockées en local
       if (typeof window !== "undefined") {
         const storedUser = localStorage.getItem("doj_user");
         if (storedUser) {
@@ -165,7 +169,7 @@ export default function DashboardPage() {
         }
       }
     }
-  }, [router, searchParams]);
+  }, [router]);
 
   const handleDiscordLink = () => {
     const token =
@@ -290,7 +294,7 @@ export default function DashboardPage() {
                 <p className="text-[11px] uppercase tracking-[0.23em] text-slate-500">
                   Travail
                 </p>
-              <div className="flex flex-wrap items-end justify-between gap-2">
+                <div className="flex flex-wrap items-end justify-between gap-2">
                   <h2 className="text-sm md:text-base font-semibold text-slate-50">
                     Gestion des dossiers et audiences
                   </h2>
