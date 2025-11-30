@@ -360,6 +360,7 @@ export default function DashboardPage() {
                 description="Consulter et modifier les informations de votre profil DOJ."
                 badge="À venir"
                 disabled={!isDiscordLinked}
+                onClick={() => router.push("/profile")}
               />
               <Card
                 subtitle="Annuaire"
