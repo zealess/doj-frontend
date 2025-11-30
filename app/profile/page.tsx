@@ -22,8 +22,8 @@ interface UserProfile {
   // Structure
   sector?: string | null;
   service?: string | null;
-  poles?: string[];
-  habilitations?: string[];
+  poles?: string[] | null;
+  habilitations?: string[] | null;
   fjf?: boolean;
 }
 
@@ -46,6 +46,18 @@ export default function ProfilePage() {
     ["Juge Fédéral", "Juge Fédéral Adjoint", "Juge Assesseur"].includes(
       user.discordHighestRole ?? ""
     );
+
+  // Hydrate les champs du formulaire à partir d'un user
+  const hydrateStructureForm = (u: UserProfile) => {
+    const polesArray = Array.isArray(u.poles) ? u.poles : [];
+    const habArray = Array.isArray(u.habilitations) ? u.habilitations : [];
+
+    setSector(u.sector ?? "");
+    setService(u.service ?? "");
+    setPolesText(polesArray.join(", "));
+    setHabilitationsText(habArray.join(", "));
+    setFjf(!!u.fjf);
+  };
 
   // Récupération de l'utilisateur
   useEffect(() => {
@@ -72,7 +84,7 @@ export default function ProfilePage() {
           if (typeof window !== "undefined") {
             const stored = localStorage.getItem("doj_user");
             if (stored) {
-              const parsed = JSON.parse(stored);
+              const parsed: UserProfile = JSON.parse(stored);
               setUser(parsed);
               hydrateStructureForm(parsed);
             }
@@ -82,17 +94,19 @@ export default function ProfilePage() {
         }
 
         const data = await res.json();
-        setUser(data.user);
+        const u: UserProfile = data.user;
+
+        setUser(u);
         if (typeof window !== "undefined") {
-          localStorage.setItem("doj_user", JSON.stringify(data.user));
+          localStorage.setItem("doj_user", JSON.stringify(u));
         }
-        hydrateStructureForm(data.user);
+        hydrateStructureForm(u);
       } catch (err) {
         console.error("Erreur fetch profil:", err);
         if (typeof window !== "undefined") {
           const stored = localStorage.getItem("doj_user");
           if (stored) {
-            const parsed = JSON.parse(stored);
+            const parsed: UserProfile = JSON.parse(stored);
             setUser(parsed);
             hydrateStructureForm(parsed);
           }
@@ -100,14 +114,6 @@ export default function ProfilePage() {
       } finally {
         setLoading(false);
       }
-    };
-
-    const hydrateStructureForm = (u: UserProfile) => {
-      setSector(u.sector ?? "");
-      setService(u.service ?? "");
-      setPolesText((u.poles ?? []).join(", "));
-      setHabilitationsText((u.habilitations ?? []).join(", "));
-      setFjf(!!u.fjf);
     };
 
     fetchMe();
@@ -158,10 +164,13 @@ export default function ProfilePage() {
       }
 
       const data = await res.json();
-      setUser(data.user);
+      const u: UserProfile = data.user;
+
+      setUser(u);
       if (typeof window !== "undefined") {
-        localStorage.setItem("doj_user", JSON.stringify(data.user));
+        localStorage.setItem("doj_user", JSON.stringify(u));
       }
+      hydrateStructureForm(u);
       setIsEditingStructure(false);
     } catch (err) {
       console.error("Erreur réseau update profil:", err);
@@ -202,7 +211,8 @@ export default function ProfilePage() {
                   Fiche d&apos;identité magistrat
                 </h1>
                 <p className="text-[12px] text-slate-400 mt-1">
-                  Informations liées à votre compte DOJ et à votre présence sur le serveur.
+                  Informations liées à votre compte DOJ et à votre présence sur le
+                  serveur.
                 </p>
               </div>
               {user && (
@@ -326,8 +336,8 @@ export default function ProfilePage() {
                   Affectation interne du magistrat
                 </h2>
                 <p className="text-[12px] text-slate-400 mt-1">
-                  Secteur, pôles, habilitations et F.J.F. définissent vos champs d&apos;action
-                  au sein du DOJ.
+                  Secteur, pôles, habilitations et F.J.F. définissent vos champs
+                  d&apos;action au sein du DOJ.
                 </p>
               </div>
 
@@ -352,57 +362,58 @@ export default function ProfilePage() {
               <div className="space-y-5">
                 {/* Affichage ou formulaire suivant le mode */}
                 {!isEditingStructure ? (
-  <>
-    <div className="grid grid-cols-1 gap-4">
-      <div className="space-y-1">
-        <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500">
-          Secteur
-        </p>
-        <p className="text-sm text-slate-50">
-          {user.sector || "Non défini"}
-        </p>
-      </div>
+                  <>
+                    <div className="grid grid-cols-1 gap-4">
+                      <div className="space-y-1">
+                        <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500">
+                          Secteur
+                        </p>
+                        <p className="text-sm text-slate-50">
+                          {user.sector || "Non défini"}
+                        </p>
+                      </div>
 
-      <div className="space-y-1">
-        <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500">
-          Service
-        </p>
-        <p className="text-sm text-slate-50">
-          {user.service || "Non défini"}
-        </p>
-      </div>
+                      <div className="space-y-1">
+                        <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500">
+                          Service
+                        </p>
+                        <p className="text-sm text-slate-50">
+                          {user.service || "Non défini"}
+                        </p>
+                      </div>
 
-      <div className="space-y-1">
-        <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500">
-          Pôles
-        </p>
-        <p className="text-sm text-slate-50">
-          {Array.isArray(user.poles) && user.poles.length > 0
-            ? user.poles.join(", ")
-            : "Aucun pôle renseigné"}
-        </p>
-      </div>
+                      <div className="space-y-1">
+                        <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500">
+                          Pôles
+                        </p>
+                        <p className="text-sm text-slate-50">
+                          {Array.isArray(user.poles) && user.poles.length > 0
+                            ? user.poles.join(", ")
+                            : "Aucun pôle renseigné"}
+                        </p>
+                      </div>
 
-      <div className="space-y-1">
-        <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500">
-          Habilitations
-        </p>
-        <p className="text-sm text-slate-50">
-          {Array.isArray(user.habilitations) && user.habilitations.length > 0
-            ? user.habilitations.join(", ")
-            : "Aucune habilitation renseignée"}
-        </p>
-      </div>
+                      <div className="space-y-1">
+                        <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500">
+                          Habilitations
+                        </p>
+                        <p className="text-sm text-slate-50">
+                          {Array.isArray(user.habilitations) &&
+                          user.habilitations.length > 0
+                            ? user.habilitations.join(", ")
+                            : "Aucune habilitation renseignée"}
+                        </p>
+                      </div>
 
-      <div className="space-y-1">
-        <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500">
-          F.J.F
-        </p>
-        <p className="text-sm text-slate-50">
-          {user.fjf ? "Oui (habilité F.J.F)" : "Non habilité F.J.F"}
-        </p>
-      </div>
-    </div>
+                      <div className="space-y-1">
+                        <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500">
+                          F.J.F
+                        </p>
+                        <p className="text-sm text-slate-50">
+                          {user.fjf ? "Oui (habilité F.J.F)" : "Non habilité F.J.F"}
+                        </p>
+                      </div>
+                    </div>
 
                     {!canEditStructure && (
                       <p className="text-[11px] text-slate-500 mt-2">
