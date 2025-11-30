@@ -59,7 +59,9 @@ const Card = ({
             {subtitle}
           </p>
         )}
-        <h3 className="text-sm md:text-base font-semibold text-slate-50">{title}</h3>
+        <h3 className="text-sm md:text-base font-semibold text-slate-50">
+          {title}
+        </h3>
       </div>
       {badge && (
         <span className="text-[10px] px-2 py-1 rounded-full bg-sky-500/15 border border-sky-500/60 text-sky-300">
@@ -142,7 +144,7 @@ export default function DashboardPage() {
       return;
     }
 
-    // On lit ?discord= depuis l'URL (pas besoin de useSearchParams)
+    // On lit ?discord= depuis l'URL
     let discordStatus: string | null = null;
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
@@ -210,6 +212,7 @@ export default function DashboardPage() {
                   {isDiscordLinked ? (
                     <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/60 text-[11px] text-emerald-300">
                       <span className="inline-flex h-4 w-4 items-center justify-center">
+                        {/* logo Discord */}
                         <svg
                           viewBox="0 0 24 24"
                           aria-hidden="true"
@@ -220,12 +223,12 @@ export default function DashboardPage() {
                       </span>
                       <span>
                         Compte Discord lié
-                        {discordInfo?.username ? (
+                        {discordInfo?.username && (
                           <span className="text-slate-300">
                             {" "}
                             · {discordInfo.username}
                           </span>
-                        ) : null}
+                        )}
                       </span>
                     </div>
                   ) : (
@@ -235,6 +238,7 @@ export default function DashboardPage() {
                       className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/70 border border-sky-500/70 text-[11px] text-sky-300 hover:bg-sky-500/10 hover:border-sky-400 transition-all duration-200"
                     >
                       <span className="inline-flex h-4 w-4 items-center justify-center">
+                        {/* logo Discord */}
                         <svg
                           viewBox="0 0 24 24"
                           aria-hidden="true"
@@ -374,11 +378,13 @@ export default function DashboardPage() {
 
           {/* INFO VERSION */}
           <section className="glass-card rounded-2xl border border-slate-800/80 bg-slate-950/80 px-5 py-4 text-[11px] text-slate-400">
-            <p className="mb-1.5 font-medium text-slate-200">Version Alpha – Portail DOJ</p>
+            <p className="mb-1.5 font-medium text-slate-200">
+              Version Alpha – Portail DOJ
+            </p>
             <p>
               Certaines sections sont marquées comme{" "}
-              <span className="text-sky-300">“À venir”</span> et seront activées au fur et à mesure
-              de leur développement.
+              <span className="text-sky-300">“À venir”</span> et seront activées
+              au fur et à mesure de leur développement.
             </p>
           </section>
         </div>
