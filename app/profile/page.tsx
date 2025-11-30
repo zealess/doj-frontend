@@ -352,57 +352,57 @@ export default function ProfilePage() {
               <div className="space-y-5">
                 {/* Affichage ou formulaire suivant le mode */}
                 {!isEditingStructure ? (
-                  <>
-                    <div className="grid grid-cols-1 gap-4">
-                      <div className="space-y-1">
-                        <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500">
-                          Secteur
-                        </p>
-                        <p className="text-sm text-slate-50">
-                          {user.sector || "Non défini"}
-                        </p>
-                      </div>
+  <>
+    <div className="grid grid-cols-1 gap-4">
+      <div className="space-y-1">
+        <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500">
+          Secteur
+        </p>
+        <p className="text-sm text-slate-50">
+          {user.sector || "Non défini"}
+        </p>
+      </div>
 
-                      <div className="space-y-1">
-                        <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500">
-                          Service
-                        </p>
-                        <p className="text-sm text-slate-50">
-                          {user.service || "Non défini"}
-                        </p>
-                      </div>
+      <div className="space-y-1">
+        <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500">
+          Service
+        </p>
+        <p className="text-sm text-slate-50">
+          {user.service || "Non défini"}
+        </p>
+      </div>
 
-                      <div className="space-y-1">
-                        <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500">
-                          Pôles
-                        </p>
-                        <p className="text-sm text-slate-50">
-                          {user.poles && user.poles.length > 0
-                            ? user.poles.join(", ")
-                            : "Aucun pôle renseigné"}
-                        </p>
-                      </div>
+      <div className="space-y-1">
+        <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500">
+          Pôles
+        </p>
+        <p className="text-sm text-slate-50">
+          {Array.isArray(user.poles) && user.poles.length > 0
+            ? user.poles.join(", ")
+            : "Aucun pôle renseigné"}
+        </p>
+      </div>
 
-                      <div className="space-y-1">
-                        <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500">
-                          Habilitations
-                        </p>
-                        <p className="text-sm text-slate-50">
-                          {user.habilitations && user.habilitations.length > 0
-                            ? user.habilitations.join(", ")
-                            : "Aucune habilitation renseignée"}
-                        </p>
-                      </div>
+      <div className="space-y-1">
+        <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500">
+          Habilitations
+        </p>
+        <p className="text-sm text-slate-50">
+          {Array.isArray(user.habilitations) && user.habilitations.length > 0
+            ? user.habilitations.join(", ")
+            : "Aucune habilitation renseignée"}
+        </p>
+      </div>
 
-                      <div className="space-y-1">
-                        <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500">
-                          F.J.F
-                        </p>
-                        <p className="text-sm text-slate-50">
-                          {user.fjf ? "Oui (habilité F.J.F)" : "Non habilité F.J.F"}
-                        </p>
-                      </div>
-                    </div>
+      <div className="space-y-1">
+        <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500">
+          F.J.F
+        </p>
+        <p className="text-sm text-slate-50">
+          {user.fjf ? "Oui (habilité F.J.F)" : "Non habilité F.J.F"}
+        </p>
+      </div>
+    </div>
 
                     {!canEditStructure && (
                       <p className="text-[11px] text-slate-500 mt-2">
