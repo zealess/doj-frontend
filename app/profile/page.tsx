@@ -22,8 +22,8 @@ interface UserProfile {
   // Structure
   sector?: string | null;
   service?: string | null;
-  poles?: string[] | string | null;
-  habilitations?: string[] | string | null;
+  poles?: string[] | null;
+  habilitations?: string[] | null;
   fjf?: boolean;
 }
 
@@ -47,28 +47,13 @@ export default function ProfilePage() {
       user.discordHighestRole ?? ""
     );
 
-  // Normalisation pour gérer string OU array venant du backend
-  const normalizeList = (value: unknown): string[] => {
-    if (!value) return [];
-    if (Array.isArray(value)) {
-      return value
-        .map((v) => String(v).trim())
-        .filter((v) => v.length > 0);
-    }
-    if (typeof value === "string") {
-      return value
-        .split(",")
-        .map((v) => v.trim())
-        .filter((v) => v.length > 0);
-    }
-    return [];
-  };
-
   const hydrateStructureForm = (u: UserProfile) => {
     setSector(u.sector ?? "");
     setService(u.service ?? "");
-    setPolesText(normalizeList(u.poles).join(", "));
-    setHabilitationsText(normalizeList(u.habilitations).join(", "));
+    setPolesText(Array.isArray(u.poles) ? u.poles.join(", ") : "");
+    setHabilitationsText(
+      Array.isArray(u.habilitations) ? u.habilitations.join(", ") : ""
+    );
     setFjf(!!u.fjf);
   };
 
@@ -93,7 +78,6 @@ export default function ProfilePage() {
 
         if (!res.ok) {
           console.error("Erreur /api/auth/me:", res.status);
-          // fallback sur localStorage
           if (typeof window !== "undefined") {
             const stored = localStorage.getItem("doj_user");
             if (stored) {
@@ -109,9 +93,11 @@ export default function ProfilePage() {
         const data = await res.json();
         const u: UserProfile = data.user;
         setUser(u);
+
         if (typeof window !== "undefined") {
           localStorage.setItem("doj_user", JSON.stringify(u));
         }
+
         hydrateStructureForm(u);
       } catch (err) {
         console.error("Erreur fetch profil:", err);
@@ -176,12 +162,14 @@ export default function ProfilePage() {
       }
 
       const data = await res.json();
-      const updated: UserProfile = data.user;
-      setUser(updated);
+      const u: UserProfile = data.user;
+      setUser(u);
+
       if (typeof window !== "undefined") {
-        localStorage.setItem("doj_user", JSON.stringify(updated));
+        localStorage.setItem("doj_user", JSON.stringify(u));
       }
-      hydrateStructureForm(updated);
+
+      hydrateStructureForm(u);
       setIsEditingStructure(false);
     } catch (err) {
       console.error("Erreur réseau update profil:", err);
@@ -198,9 +186,6 @@ export default function ProfilePage() {
     "Magistrat";
 
   const displayHighestRole = user?.discordHighestRole || "Non défini";
-
-  const polesDisplay = normalizeList(user?.poles ?? null);
-  const habilitationsDisplay = normalizeList(user?.habilitations ?? null);
 
   return (
     <main className="min-h-screen body-gradient relative flex items-stretch justify-center overflow-hidden">
@@ -225,8 +210,8 @@ export default function ProfilePage() {
                   Fiche d&apos;identité magistrat
                 </h1>
                 <p className="text-[12px] text-slate-400 mt-1">
-                  Informations liées à votre compte DOJ et à votre présence sur le
-                  serveur.
+                  Informations liées à votre compte DOJ et à votre présence sur
+                  le serveur.
                 </p>
               </div>
               {user && (
@@ -279,8 +264,8 @@ export default function ProfilePage() {
                       )}
                     </div>
                     <p className="text-[12px] text-slate-400">
-                      Identité utilisée comme référence pour les habilitations et accès
-                      internes.
+                      Identité utilisée comme référence pour les habilitations
+                      et accès internes.
                     </p>
                   </div>
                 </div>
@@ -316,7 +301,9 @@ export default function ProfilePage() {
                         viewBox="0 0 24 24"
                         aria-hidden="true"
                         className={`h-4 w-4 ${
-                          user.discordLinked ? "fill-emerald-300" : "fill-slate-500"
+                          user.discordLinked
+                            ? "fill-emerald-300"
+                            : "fill-slate-500"
                         }`}
                       >
                         <path d="M20.317 4.369A18.47 18.47 0 0 0 16.556 3c-.2.356-.424.832-.582 1.214a17.2 17.2 0 0 0-3.947 0A12.52 12.52 0 0 0 11.445 3c-1.32.24-2.63.6-3.862 1.105C4.036 9.063 3.178 13.59 3.513 18.06a18.39 18.39 0 0 0 4.986 2.54c.4-.54.754-1.115 1.06-1.72a11.9 11.9 0 0 1-1.66-.8c.14-.1.276-.21.407-.32 3.2 1.5 6.67 1.5 9.84 0 .135.11.27.22.407.32-.53.31-1.087.58-1.665.8.306.605.66 1.18 1.06 1.72a18.26 18.26 0 0 0 5-2.57c.41-5.25-.7-9.74-2.631-13.69ZM9.68 15.33c-.96 0-1.754-.88-1.754-1.96 0-1.08.774-1.97 1.754-1.97.987 0 1.774.89 1.754 1.97 0 1.08-.767 1.96-1.754 1.96Zm4.64 0c-.96 0-1.754-.88-1.754-1.96 0-1.08.774-1.97 1.754-1.97.987 0 1.774.89 1.754 1.97 0 1.08-.767 1.96-1.754 1.96Z" />
@@ -349,8 +336,8 @@ export default function ProfilePage() {
                   Affectation interne du magistrat
                 </h2>
                 <p className="text-[12px] text-slate-400 mt-1">
-                  Secteur, pôles, habilitations et F.J.F. définissent vos champs
-                  d&apos;action au sein du DOJ.
+                  Secteur, pôles, habilitations et F.J.F. définissent vos
+                  champs d&apos;action au sein du DOJ.
                 </p>
               </div>
 
@@ -373,7 +360,6 @@ export default function ProfilePage() {
               </div>
             ) : (
               <div className="space-y-5">
-                {/* Affichage ou formulaire suivant le mode */}
                 {!isEditingStructure ? (
                   <>
                     <div className="grid grid-cols-1 gap-4">
@@ -400,8 +386,9 @@ export default function ProfilePage() {
                           Pôles
                         </p>
                         <p className="text-sm text-slate-50">
-                          {polesDisplay.length > 0
-                            ? polesDisplay.join(", ")
+                          {Array.isArray(user.poles) &&
+                          user.poles.length > 0
+                            ? user.poles.join(", ")
                             : "Aucun pôle renseigné"}
                         </p>
                       </div>
@@ -411,8 +398,9 @@ export default function ProfilePage() {
                           Habilitations
                         </p>
                         <p className="text-sm text-slate-50">
-                          {habilitationsDisplay.length > 0
-                            ? habilitationsDisplay.join(", ")
+                          {Array.isArray(user.habilitations) &&
+                          user.habilitations.length > 0
+                            ? user.habilitations.join(", ")
                             : "Aucune habilitation renseignée"}
                         </p>
                       </div>
@@ -422,16 +410,20 @@ export default function ProfilePage() {
                           F.J.F
                         </p>
                         <p className="text-sm text-slate-50">
-                          {user.fjf ? "Oui (habilité F.J.F)" : "Non habilité F.J.F"}
+                          {user.fjf
+                            ? "Oui (habilité F.J.F)"
+                            : "Non habilité F.J.F"}
                         </p>
                       </div>
                     </div>
 
                     {!canEditStructure && (
                       <p className="text-[11px] text-slate-500 mt-2">
-                        Les champs ci-dessus ne sont modifiables que par les grades{" "}
+                        Les champs ci-dessus ne sont modifiables que par les
+                        grades{" "}
                         <span className="text-slate-300">
-                          Juge Fédéral, Juge Fédéral Adjoint ou Juge Assesseur
+                          Juge Fédéral, Juge Fédéral Adjoint ou Juge
+                          Assesseur
                         </span>
                         .
                       </p>
@@ -439,7 +431,6 @@ export default function ProfilePage() {
                   </>
                 ) : (
                   <>
-                    {/* FORMULAIRE ÉDITION */}
                     <div className="space-y-4">
                       <div className="space-y-1">
                         <label className="text-[11px] uppercase tracking-[0.18em] text-slate-500">
@@ -485,7 +476,9 @@ export default function ProfilePage() {
                         </label>
                         <textarea
                           value={habilitationsText}
-                          onChange={(e) => setHabilitationsText(e.target.value)}
+                          onChange={(e) =>
+                            setHabilitationsText(e.target.value)
+                          }
                           className="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-50 outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 min-h-[60px] resize-none"
                           placeholder="Ex : CI, Mandats, Fédéral..."
                         />
@@ -509,7 +502,8 @@ export default function ProfilePage() {
                           F.J.F {fjf ? "activé" : "non activé"}
                         </button>
                         <p className="text-[11px] text-slate-500">
-                          F.J.F accessible uniquement à partir d&apos;un certain grade.
+                          F.J.F accessible uniquement à partir d&apos;un
+                          certain grade.
                         </p>
                       </div>
                     </div>
