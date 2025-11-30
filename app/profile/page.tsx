@@ -47,35 +47,28 @@ export default function ProfilePage() {
       user.discordHighestRole ?? ""
     );
 
-  // 🔧 Fonction utilitaire pour hydrater les champs de structure
+  // Normalisation pour gérer string OU array venant du backend
+  const normalizeList = (value: unknown): string[] => {
+    if (!value) return [];
+    if (Array.isArray(value)) {
+      return value
+        .map((v) => String(v).trim())
+        .filter((v) => v.length > 0);
+    }
+    if (typeof value === "string") {
+      return value
+        .split(",")
+        .map((v) => v.trim())
+        .filter((v) => v.length > 0);
+    }
+    return [];
+  };
+
   const hydrateStructureForm = (u: UserProfile) => {
     setSector(u.sector ?? "");
     setService(u.service ?? "");
-
-    // Pôles : peut être array, string ou null
-    let polesArray: string[] = [];
-    if (Array.isArray(u.poles)) {
-      polesArray = u.poles;
-    } else if (typeof u.poles === "string") {
-      polesArray = u.poles
-        .split(",")
-        .map((p) => p.trim())
-        .filter((p) => p.length > 0);
-    }
-    setPolesText(polesArray.join(", "));
-
-    // Habilitations : même logique
-    let habArray: string[] = [];
-    if (Array.isArray(u.habilitations)) {
-      habArray = u.habilitations;
-    } else if (typeof u.habilitations === "string") {
-      habArray = u.habilitations
-        .split(",")
-        .map((h) => h.trim())
-        .filter((h) => h.length > 0);
-    }
-    setHabilitationsText(habArray.join(", "));
-
+    setPolesText(normalizeList(u.poles).join(", "));
+    setHabilitationsText(normalizeList(u.habilitations).join(", "));
     setFjf(!!u.fjf);
   };
 
@@ -115,7 +108,6 @@ export default function ProfilePage() {
 
         const data = await res.json();
         const u: UserProfile = data.user;
-
         setUser(u);
         if (typeof window !== "undefined") {
           localStorage.setItem("doj_user", JSON.stringify(u));
@@ -186,7 +178,6 @@ export default function ProfilePage() {
       const data = await res.json();
       const updated: UserProfile = data.user;
       setUser(updated);
-
       if (typeof window !== "undefined") {
         localStorage.setItem("doj_user", JSON.stringify(updated));
       }
@@ -207,6 +198,9 @@ export default function ProfilePage() {
     "Magistrat";
 
   const displayHighestRole = user?.discordHighestRole || "Non défini";
+
+  const polesDisplay = normalizeList(user?.poles ?? null);
+  const habilitationsDisplay = normalizeList(user?.habilitations ?? null);
 
   return (
     <main className="min-h-screen body-gradient relative flex items-stretch justify-center overflow-hidden">
@@ -406,20 +400,9 @@ export default function ProfilePage() {
                           Pôles
                         </p>
                         <p className="text-sm text-slate-50">
-                          {(() => {
-                            let arr: string[] = [];
-                            if (Array.isArray(user.poles)) {
-                              arr = user.poles;
-                            } else if (typeof user.poles === "string") {
-                              arr = user.poles
-                                .split(",")
-                                .map((p) => p.trim())
-                                .filter((p) => p.length > 0);
-                            }
-                            return arr.length > 0
-                              ? arr.join(", ")
-                              : "Aucun pôle renseigné";
-                          })()}
+                          {polesDisplay.length > 0
+                            ? polesDisplay.join(", ")
+                            : "Aucun pôle renseigné"}
                         </p>
                       </div>
 
@@ -428,20 +411,9 @@ export default function ProfilePage() {
                           Habilitations
                         </p>
                         <p className="text-sm text-slate-50">
-                          {(() => {
-                            let arr: string[] = [];
-                            if (Array.isArray(user.habilitations)) {
-                              arr = user.habilitations;
-                            } else if (typeof user.habilitations === "string") {
-                              arr = user.habilitations
-                                .split(",")
-                                .map((h) => h.trim())
-                                .filter((h) => h.length > 0);
-                            }
-                            return arr.length > 0
-                              ? arr.join(", ")
-                              : "Aucune habilitation renseignée";
-                          })()}
+                          {habilitationsDisplay.length > 0
+                            ? habilitationsDisplay.join(", ")
+                            : "Aucune habilitation renseignée"}
                         </p>
                       </div>
 
