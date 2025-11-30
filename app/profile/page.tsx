@@ -22,8 +22,8 @@ interface UserProfile {
   // Structure
   sector?: string | null;
   service?: string | null;
-  poles?: string[] | null;
-  habilitations?: string[] | null;
+  poles?: string[] | string | null;
+  habilitations?: string[] | string | null;
   fjf?: boolean;
 }
 
@@ -47,15 +47,35 @@ export default function ProfilePage() {
       user.discordHighestRole ?? ""
     );
 
-  // Hydrate les champs du formulaire à partir d'un user
+  // 🔧 Fonction utilitaire pour hydrater les champs de structure
   const hydrateStructureForm = (u: UserProfile) => {
-    const polesArray = Array.isArray(u.poles) ? u.poles : [];
-    const habArray = Array.isArray(u.habilitations) ? u.habilitations : [];
-
     setSector(u.sector ?? "");
     setService(u.service ?? "");
+
+    // Pôles : peut être array, string ou null
+    let polesArray: string[] = [];
+    if (Array.isArray(u.poles)) {
+      polesArray = u.poles;
+    } else if (typeof u.poles === "string") {
+      polesArray = u.poles
+        .split(",")
+        .map((p) => p.trim())
+        .filter((p) => p.length > 0);
+    }
     setPolesText(polesArray.join(", "));
+
+    // Habilitations : même logique
+    let habArray: string[] = [];
+    if (Array.isArray(u.habilitations)) {
+      habArray = u.habilitations;
+    } else if (typeof u.habilitations === "string") {
+      habArray = u.habilitations
+        .split(",")
+        .map((h) => h.trim())
+        .filter((h) => h.length > 0);
+    }
     setHabilitationsText(habArray.join(", "));
+
     setFjf(!!u.fjf);
   };
 
@@ -164,13 +184,13 @@ export default function ProfilePage() {
       }
 
       const data = await res.json();
-      const u: UserProfile = data.user;
+      const updated: UserProfile = data.user;
+      setUser(updated);
 
-      setUser(u);
       if (typeof window !== "undefined") {
-        localStorage.setItem("doj_user", JSON.stringify(u));
+        localStorage.setItem("doj_user", JSON.stringify(updated));
       }
-      hydrateStructureForm(u);
+      hydrateStructureForm(updated);
       setIsEditingStructure(false);
     } catch (err) {
       console.error("Erreur réseau update profil:", err);
@@ -238,7 +258,6 @@ export default function ProfilePage() {
                 <div className="flex flex-wrap items-center gap-4">
                   <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500/40 to-indigo-500/40 border border-slate-700/80 shadow-[0_10px_35px_rgba(15,23,42,0.9)] overflow-hidden">
                     {user.discordAvatar ? (
-                      // avatar Discord si dispo
                       <img
                         src={user.discordAvatar}
                         alt="Avatar Discord"
@@ -387,9 +406,20 @@ export default function ProfilePage() {
                           Pôles
                         </p>
                         <p className="text-sm text-slate-50">
-                          {Array.isArray(user.poles) && user.poles.length > 0
-                            ? user.poles.join(", ")
-                            : "Aucun pôle renseigné"}
+                          {(() => {
+                            let arr: string[] = [];
+                            if (Array.isArray(user.poles)) {
+                              arr = user.poles;
+                            } else if (typeof user.poles === "string") {
+                              arr = user.poles
+                                .split(",")
+                                .map((p) => p.trim())
+                                .filter((p) => p.length > 0);
+                            }
+                            return arr.length > 0
+                              ? arr.join(", ")
+                              : "Aucun pôle renseigné";
+                          })()}
                         </p>
                       </div>
 
@@ -398,10 +428,20 @@ export default function ProfilePage() {
                           Habilitations
                         </p>
                         <p className="text-sm text-slate-50">
-                          {Array.isArray(user.habilitations) &&
-                          user.habilitations.length > 0
-                            ? user.habilitations.join(", ")
-                            : "Aucune habilitation renseignée"}
+                          {(() => {
+                            let arr: string[] = [];
+                            if (Array.isArray(user.habilitations)) {
+                              arr = user.habilitations;
+                            } else if (typeof user.habilitations === "string") {
+                              arr = user.habilitations
+                                .split(",")
+                                .map((h) => h.trim())
+                                .filter((h) => h.length > 0);
+                            }
+                            return arr.length > 0
+                              ? arr.join(", ")
+                              : "Aucune habilitation renseignée";
+                          })()}
                         </p>
                       </div>
 
