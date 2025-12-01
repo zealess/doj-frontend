@@ -14,18 +14,17 @@ interface UserProfile {
 
   // Discord
   discordLinked?: boolean;
+  discordId?: string | null;
   discordUsername?: string | null;
   discordNickname?: string | null;
   discordAvatar?: string | null;
-  discordHighestRole?: string | null;
-  discordHighestRoleName?: string | null;
   judgeGrade?: string | null;
 
   // Structure
   sector?: string | null;
   service?: string | null;
-  poles?: string[] | string | null;
-  habilitations?: string[] | string | null;
+  poles?: string[];
+  habilitations?: string[];
   fjf?: boolean;
 }
 
@@ -34,7 +33,7 @@ export default function ProfilePage() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // État édition structure
+  // Édition structure
   const [isEditingStructure, setIsEditingStructure] = useState(false);
   const [sector, setSector] = useState("");
   const [service, setService] = useState("");
@@ -43,46 +42,34 @@ export default function ProfilePage() {
   const [fjf, setFjf] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // ➜ Fonction utilitaire pour hydrater le formulaire à partir de user
+  const canEditStructure =
+    !!user &&
+    ["Juge Fédéral", "Juge Fédéral Adjoint", "Juge Assesseur"].includes(
+      user.judgeGrade ?? ""
+    );
+
+  // Hydrate les champs d'édition à partir d'un user
   const hydrateStructureForm = (u: UserProfile) => {
     setSector(u.sector ?? "");
     setService(u.service ?? "");
 
-    // Pôles : peut être array, string ou undefined
-    let polesString = "";
-    if (Array.isArray(u.poles)) {
-      polesString = u.poles.join(", ");
-    } else if (typeof u.poles === "string") {
-      polesString = u.poles;
-    }
-    setPolesText(polesString);
+    const polesArray = Array.isArray(u.poles)
+      ? u.poles
+      : u.poles
+      ? [String(u.poles)]
+      : [];
+    const habilitationsArray = Array.isArray(u.habilitations)
+      ? u.habilitations
+      : u.habilitations
+      ? [String(u.habilitations)]
+      : [];
 
-    // Habilitations : pareil
-    let habString = "";
-    if (Array.isArray(u.habilitations)) {
-      habString = u.habilitations.join(", ");
-    } else if (typeof u.habilitations === "string") {
-      habString = u.habilitations;
-    }
-    setHabilitationsText(habString);
-
+    setPolesText(polesArray.join(", "));
+    setHabilitationsText(habilitationsArray.join(", "));
     setFjf(!!u.fjf);
   };
 
-  const canEditStructure =
-    !!user &&
-    [
-      "Juge Fédéral",
-      "Juge Fédéral Adjoint",
-      "Juge Assesseur",
-    ].includes(
-      user.judgeGrade ??
-        user.discordHighestRole ??
-        user.discordHighestRoleName ??
-        ""
-    );
-
-  // Récupération de l'utilisateur
+  // Récupération /api/auth/me
   useEffect(() => {
     const token =
       typeof window !== "undefined" ? localStorage.getItem("doj_token") : null;
@@ -107,7 +94,7 @@ export default function ProfilePage() {
           if (typeof window !== "undefined") {
             const stored = localStorage.getItem("doj_user");
             if (stored) {
-              const parsed: UserProfile = JSON.parse(stored);
+              const parsed = JSON.parse(stored);
               setUser(parsed);
               hydrateStructureForm(parsed);
             }
@@ -117,20 +104,19 @@ export default function ProfilePage() {
         }
 
         const data = await res.json();
-        const u: UserProfile = data.user;
-        setUser(u);
+        setUser(data.user);
 
         if (typeof window !== "undefined") {
-          localStorage.setItem("doj_user", JSON.stringify(u));
+          localStorage.setItem("doj_user", JSON.stringify(data.user));
         }
 
-        hydrateStructureForm(u);
+        hydrateStructureForm(data.user);
       } catch (err) {
         console.error("Erreur fetch profil:", err);
         if (typeof window !== "undefined") {
           const stored = localStorage.getItem("doj_user");
           if (stored) {
-            const parsed: UserProfile = JSON.parse(stored);
+            const parsed = JSON.parse(stored);
             setUser(parsed);
             hydrateStructureForm(parsed);
           }
@@ -188,14 +174,12 @@ export default function ProfilePage() {
       }
 
       const data = await res.json();
-      const updatedUser: UserProfile = data.user;
-      setUser(updatedUser);
+      setUser(data.user);
 
       if (typeof window !== "undefined") {
-        localStorage.setItem("doj_user", JSON.stringify(updatedUser));
+        localStorage.setItem("doj_user", JSON.stringify(data.user));
       }
 
-      hydrateStructureForm(updatedUser);
       setIsEditingStructure(false);
     } catch (err) {
       console.error("Erreur réseau update profil:", err);
@@ -211,11 +195,7 @@ export default function ProfilePage() {
     user?.username ||
     "Magistrat";
 
-  const displayHighestRole =
-    user?.judgeGrade ||
-    user?.discordHighestRole ||
-    user?.discordHighestRoleName ||
-    "Non défini";
+  const displayHighestRole = user?.judgeGrade || "Non défini";
 
   return (
     <main className="min-h-screen body-gradient relative flex items-stretch justify-center overflow-hidden">
@@ -224,12 +204,10 @@ export default function ProfilePage() {
       <div className="floating-orb w-80 h-80 bg-indigo-500/30 bottom-[-80px] right-[-40px]" />
 
       <div className="relative z-10 w-full px-6 md:px-10 lg:px-16 xl:px-24 py-10 md:py-12 lg:py-16 space-y-8 md:space-y-10">
-        {/* HEADER GLOBAL */}
         <AppHeader title="Portail interne – Profil magistrat" />
 
-        {/* CONTENT GRID */}
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2.1fr)_minmax(0,1.6fr)] gap-7 md:gap-8">
-          {/* COLONNE GAUCHE – IDENTITÉ DOJ / DISCORD */}
+          {/* COLONNE GAUCHE – IDENTITÉ */}
           <section className="glass-card rounded-3xl border border-slate-800/80 bg-slate-950/80 px-5 py-5 md:px-7 md:py-7 space-y-5">
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -240,8 +218,8 @@ export default function ProfilePage() {
                   Fiche d&apos;identité magistrat
                 </h1>
                 <p className="text-[12px] text-slate-400 mt-1">
-                  Informations liées à votre compte DOJ et à votre présence sur
-                  le serveur.
+                  Informations liées à votre compte DOJ et à votre présence sur le
+                  serveur.
                 </p>
               </div>
               {user && (
@@ -294,8 +272,8 @@ export default function ProfilePage() {
                       )}
                     </div>
                     <p className="text-[12px] text-slate-400">
-                      Identité utilisée comme référence pour les habilitations
-                      et accès internes.
+                      Identité utilisée comme référence pour les habilitations et
+                      accès internes.
                     </p>
                   </div>
                 </div>
@@ -323,7 +301,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                {/* Rappel Discord */}
+                {/* Liaison Discord */}
                 <div className="rounded-2xl border border-slate-800/80 bg-slate-950/80 px-4 py-3 flex flex-col gap-2">
                   <div className="flex items-center gap-2">
                     <div className="inline-flex h-7 w-7 items-center justify-center rounded-xl bg-slate-900/90 border border-slate-700/80">
@@ -331,9 +309,7 @@ export default function ProfilePage() {
                         viewBox="0 0 24 24"
                         aria-hidden="true"
                         className={`h-4 w-4 ${
-                          user.discordLinked
-                            ? "fill-emerald-300"
-                            : "fill-slate-500"
+                          user.discordLinked ? "fill-emerald-300" : "fill-slate-500"
                         }`}
                       >
                         <path d="M20.317 4.369A18.47 18.47 0 0 0 16.556 3c-.2.356-.424.832-.582 1.214a17.2 17.2 0 0 0-3.947 0A12.52 12.52 0 0 0 11.445 3c-1.32.24-2.63.6-3.862 1.105C4.036 9.063 3.178 13.59 3.513 18.06a18.39 18.39 0 0 0 4.986 2.54c.4-.54.754-1.115 1.06-1.72a11.9 11.9 0 0 1-1.66-.8c.14-.1.276-.21.407-.32 3.2 1.5 6.67 1.5 9.84 0 .135.11.27.22.407.32-.53.31-1.087.58-1.665.8.306.605.66 1.18 1.06 1.72a18.26 18.26 0 0 0 5-2.57c.41-5.25-.7-9.74-2.631-13.69ZM9.68 15.33c-.96 0-1.754-.88-1.754-1.96 0-1.08.774-1.97 1.754-1.97.987 0 1.774.89 1.754 1.97 0 1.08-.767 1.96-1.754 1.96Zm4.64 0c-.96 0-1.754-.88-1.754-1.96 0-1.08.774-1.97 1.754-1.97.987 0 1.774.89 1.754 1.97 0 1.08-.767 1.96-1.754 1.96Z" />
@@ -366,8 +342,8 @@ export default function ProfilePage() {
                   Affectation interne du magistrat
                 </h2>
                 <p className="text-[12px] text-slate-400 mt-1">
-                  Secteur, pôles, habilitations et F.J.F. définissent vos
-                  champs d&apos;action au sein du DOJ.
+                  Secteur, pôles, habilitations et F.J.F. définissent vos champs
+                  d&apos;action au sein du DOJ.
                 </p>
               </div>
 
@@ -418,9 +394,6 @@ export default function ProfilePage() {
                         <p className="text-sm text-slate-50">
                           {Array.isArray(user.poles) && user.poles.length > 0
                             ? user.poles.join(", ")
-                            : typeof user.poles === "string" &&
-                              user.poles.trim().length > 0
-                            ? user.poles
                             : "Aucun pôle renseigné"}
                         </p>
                       </div>
@@ -433,9 +406,6 @@ export default function ProfilePage() {
                           {Array.isArray(user.habilitations) &&
                           user.habilitations.length > 0
                             ? user.habilitations.join(", ")
-                            : typeof user.habilitations === "string" &&
-                              user.habilitations.trim().length > 0
-                            ? user.habilitations
                             : "Aucune habilitation renseignée"}
                         </p>
                       </div>
@@ -454,8 +424,7 @@ export default function ProfilePage() {
 
                     {!canEditStructure && (
                       <p className="text-[11px] text-slate-500 mt-2">
-                        Les champs ci-dessus ne sont modifiables que par les
-                        grades{" "}
+                        Les champs ci-dessus ne sont modifiables que par les grades{" "}
                         <span className="text-slate-300">
                           Juge Fédéral, Juge Fédéral Adjoint ou Juge Assesseur
                         </span>
@@ -465,7 +434,6 @@ export default function ProfilePage() {
                   </>
                 ) : (
                   <>
-                    {/* FORMULAIRE ÉDITION */}
                     <div className="space-y-4">
                       <div className="space-y-1">
                         <label className="text-[11px] uppercase tracking-[0.18em] text-slate-500">
@@ -535,8 +503,7 @@ export default function ProfilePage() {
                           F.J.F {fjf ? "activé" : "non activé"}
                         </button>
                         <p className="text-[11px] text-slate-500">
-                          F.J.F accessible uniquement à partir d&apos;un
-                          certain grade.
+                          F.J.F accessible uniquement à partir d&apos;un certain grade.
                         </p>
                       </div>
                     </div>
@@ -556,9 +523,7 @@ export default function ProfilePage() {
                         disabled={saving}
                         className="text-[11px] rounded-full border border-sky-500/80 bg-sky-500/10 px-4 py-1.5 text-sky-100 hover:bg-sky-500/20 disabled:opacity-60"
                       >
-                        {saving
-                          ? "Enregistrement..."
-                          : "Enregistrer les modifications"}
+                        {saving ? "Enregistrement..." : "Enregistrer les modifications"}
                       </button>
                     </div>
                   </>
